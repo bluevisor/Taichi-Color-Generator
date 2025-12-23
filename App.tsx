@@ -1,0 +1,577 @@
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { 
+  Palette, RefreshCw, History, Upload, Image as ImageIcon, 
+  Trash2, Undo, Lock, ChevronLeft, ChevronRight, Share, Download,
+  Moon, Sun, SlidersHorizontal, ChevronUp, ChevronDown, Shuffle, PanelTopClose, PanelTopOpen
+} from 'lucide-react';
+import { ThemeTokens, DualTheme, GenerationMode, ColorFormat, DesignOptions } from './types';
+import { generateTheme, extractColorFromImage } from './utils/colorUtils';
+import PreviewSection from './components/PreviewSection';
+import SwatchStrip from './components/SwatchStrip';
+
+const MAX_HISTORY = 50;
+
+// CSS Variable Injection Helper
+const getStyleVars = (tokens: ThemeTokens) => {
+  return {
+    '--bg': tokens.bg,
+    '--surface': tokens.surface,
+    '--surface2': tokens.surface2,
+    '--text': tokens.text,
+    '--text-muted': tokens.textMuted,
+    '--primary': tokens.primary,
+    '--primary-fg': tokens.primaryFg,
+    '--secondary': tokens.secondary,
+    '--secondary-fg': tokens.secondaryFg,
+    '--accent': tokens.accent,
+    '--accent-fg': tokens.accentFg,
+    '--border': tokens.border,
+    '--ring': tokens.ring,
+    '--success': tokens.success,
+    '--success-fg': tokens.successFg,
+    '--warn': tokens.warn,
+    '--warn-fg': tokens.warnFg,
+    '--error': tokens.error,
+    '--error-fg': tokens.errorFg,
+  } as React.CSSProperties;
+};
+
+// Custom Taichi (Yin Yang) Icon
+const TaichiIcon = ({ size = 24, className = "" }: { size?: number, className?: string }) => (
+  <svg 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className}
+  >
+    <circle cx="12" cy="12" r="10" />
+    <path d="M12 2a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 0-5 5 5 5 0 0 0 5 5" />
+    <circle cx="12" cy="7" r="1" fill="currentColor" />
+    <circle cx="12" cy="17" r="1" fill="currentColor" />
+  </svg>
+);
+
+const App: React.FC = () => {
+  const [history, setHistory] = useState<DualTheme[]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+  const [currentTheme, setCurrentTheme] = useState<DualTheme | null>(null);
+  const [mode, setMode] = useState<GenerationMode>('random');
+  const [format, setFormat] = useState<ColorFormat>('hex');
+  const [showHistory, setShowHistory] = useState(false);
+  const [showOptions, setShowOptions] = useState(false);
+  const [isDarkUI, setIsDarkUI] = useState(false);
+  const [showSwatches, setShowSwatches] = useState(true);
+  
+  const [designOptions, setDesignOptions] = useState<DesignOptions>({
+    borderWidth: 1,
+    shadowStrength: 2,
+    gradientLevel: 0,
+    radius: 3,
+    contrastLevel: 2, // Default to Middle (scale 0-4)
+    saturationLevel: 2 // Default to Middle (scale 0-4)
+  });
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Initialize
+  useEffect(() => {
+    const saved = localStorage.getItem('theme_history');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed.length > 0) {
+        setHistory(parsed);
+        setHistoryIndex(parsed.length - 1);
+        setCurrentTheme(parsed[parsed.length - 1]);
+        return;
+      }
+    }
+    generateNewTheme('random');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Persist history
+  useEffect(() => {
+    localStorage.setItem('theme_history', JSON.stringify(history));
+  }, [history]);
+
+  const generateNewTheme = useCallback((
+    genMode: GenerationMode, 
+    seed?: string, 
+    saturation?: number,
+    contrast?: number
+  ) => {
+    // If param is undefined, use current state.
+    const sLevel = saturation !== undefined ? saturation : designOptions.saturationLevel;
+    const cLevel = contrast !== undefined ? contrast : designOptions.contrastLevel;
+    
+    const { light, dark, seed: newSeed } = generateTheme(genMode, seed, sLevel, cLevel);
+    
+    const newTheme: DualTheme = {
+      id: crypto.randomUUID(),
+      timestamp: Date.now(),
+      light,
+      dark,
+      seed: newSeed,
+      mode: genMode
+    };
+
+    setHistory(prev => {
+      const newHist = [...prev.slice(0, historyIndex + 1), newTheme];
+      if (newHist.length > MAX_HISTORY) newHist.shift();
+      return newHist;
+    });
+    setHistoryIndex(prev => Math.min(prev + 1, MAX_HISTORY - 1));
+    setCurrentTheme(newTheme);
+  }, [historyIndex, designOptions.saturationLevel, designOptions.contrastLevel]);
+
+  // Update a single token (manual edit)
+  const handleTokenUpdate = useCallback((side: 'light' | 'dark', key: keyof ThemeTokens, value: string) => {
+    if (!currentTheme) return;
+
+    setCurrentTheme(prev => {
+      if (!prev) return null;
+      const updated = {
+        ...prev,
+        [side]: {
+          ...prev[side],
+          [key]: value
+        }
+      };
+      
+      // Also update history to persist this edit
+      setHistory(h => {
+        const newH = [...h];
+        newH[historyIndex] = updated;
+        return newH;
+      });
+      
+      return updated;
+    });
+  }, [currentTheme, historyIndex]);
+
+  // Keyboard shortcut
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space' && (e.target as HTMLElement).tagName !== 'INPUT') {
+        e.preventDefault();
+        generateNewTheme(mode);
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
+        e.preventDefault();
+        undo();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [mode, generateNewTheme]);
+
+  const undo = () => {
+    if (historyIndex > 0) {
+      setHistoryIndex(prev => prev - 1);
+      setCurrentTheme(history[historyIndex - 1]);
+    }
+  };
+
+  const redo = () => {
+    if (historyIndex < history.length - 1) {
+      setHistoryIndex(prev => prev + 1);
+      setCurrentTheme(history[historyIndex + 1]);
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      try {
+        const color = await extractColorFromImage(e.target.files[0]);
+        setMode('image');
+        generateNewTheme('analogous', color); // Use image color as seed
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  };
+
+  const exportTheme = () => {
+     if (!currentTheme) return;
+     const blob = new Blob([JSON.stringify(currentTheme, null, 2)], { type: 'application/json' });
+     const url = URL.createObjectURL(blob);
+     const a = document.createElement('a');
+     a.href = url;
+     a.download = `theme-${currentTheme.seed.replace('#','')}.json`;
+     a.click();
+  };
+
+  const updateOption = (key: keyof DesignOptions, value: number) => {
+    setDesignOptions(prev => {
+      const next = { ...prev, [key]: value };
+      return next;
+    });
+
+    // If changing color generation params, regenerate
+    if ((key === 'contrastLevel' || key === 'saturationLevel') && currentTheme) {
+      const newSat = key === 'saturationLevel' ? value : undefined;
+      const newCon = key === 'contrastLevel' ? value : undefined;
+      generateNewTheme(currentTheme.mode, currentTheme.seed, newSat, newCon);
+    }
+  };
+  
+  // Collapse logic for the global toggle
+  const toggleCollapse = () => {
+      if (showSwatches || showOptions) {
+          setShowSwatches(false);
+          setShowOptions(false);
+      } else {
+          setShowSwatches(true);
+      }
+  };
+
+  if (!currentTheme) return <div className="h-screen flex items-center justify-center bg-gray-900 text-white">Loading...</div>;
+
+  // Derive Shell Colors from the current theme + isDarkUI state
+  const shellTheme = isDarkUI ? currentTheme.dark : currentTheme.light;
+  
+  // Create dynamic style object for the shell
+  const shellStyles = {
+    backgroundColor: shellTheme.bg,
+    color: shellTheme.text,
+    borderColor: shellTheme.border,
+  };
+  
+  // Specific overrides for inputs to ensure contrast within the shell
+  const inputStyle = {
+    backgroundColor: shellTheme.surface,
+    borderColor: shellTheme.border,
+    color: shellTheme.text,
+  };
+
+  return (
+    <div 
+      className="flex flex-col h-screen overflow-hidden font-sans transition-colors duration-500"
+      style={shellStyles}
+    >
+      
+      {/* --- Toolbar --- */}
+      <header 
+        className="h-16 border-b flex items-center justify-between px-3 lg:px-4 shrink-0 z-50 relative transition-colors duration-500"
+        style={{ borderColor: shellTheme.border, backgroundColor: shellTheme.bg }}
+      >
+        <div className="flex items-center gap-4 overflow-x-auto no-scrollbar">
+          <div className="flex items-center gap-2 shrink-0">
+             <div className="w-8 h-8 rounded-lg shadow-sm flex items-center justify-center text-white" style={{ background: `linear-gradient(135deg, ${shellTheme.primary}, ${shellTheme.accent})`}}>
+                <TaichiIcon size={18} />
+             </div>
+             <h1 className="font-bold text-lg hidden md:block">Taichi Color Generator</h1>
+          </div>
+
+          <div className="hidden md:flex items-center rounded-lg p-0.5 gap-0.5 shrink-0" style={{ backgroundColor: shellTheme.surface2 }}>
+             <button onClick={undo} disabled={historyIndex <= 0} className="p-1.5 rounded-md disabled:opacity-30 transition-colors hover:bg-white/10">
+               <Undo size={16} />
+             </button>
+             <div className="w-px h-4 mx-1 bg-current opacity-20"></div>
+             <button onClick={redo} disabled={historyIndex >= history.length - 1} className="p-1.5 rounded-md disabled:opacity-30 transition-colors scale-x-[-1] hover:bg-white/10">
+               <Undo size={16} />
+             </button>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+             <button 
+               onClick={() => generateNewTheme(mode)}
+               className="text-white rounded-md font-medium shadow-md transition-all active:transform active:scale-95 flex items-center overflow-hidden group ml-2"
+               style={{ backgroundColor: shellTheme.primary, color: shellTheme.primaryFg }}
+             >
+               <div className="pl-3 pr-2 py-1.5 flex items-center gap-2">
+                 <Shuffle size={16} />
+                 <span className="font-semibold text-sm">Generate</span>
+               </div>
+               <div className="pr-1.5 py-1">
+                 <div className="bg-black/20 text-current text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm">
+                     Space
+                 </div>
+               </div>
+             </button>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+              <select 
+                value={mode} 
+                onChange={(e) => setMode(e.target.value as GenerationMode)}
+                className="text-sm rounded-md px-2 py-1.5 focus:outline-none focus:ring-2 border cursor-pointer"
+                style={{ ...inputStyle, outlineColor: shellTheme.primary }}
+              >
+                <option value="random">Random</option>
+                <option value="monochrome">Monochrome</option>
+                <option value="analogous">Analogous</option>
+                <option value="complementary">Complementary</option>
+                <option value="split-complementary">Split</option>
+                <option value="triadic">Triadic</option>
+              </select>
+
+              <select 
+                value={format} 
+                onChange={(e) => setFormat(e.target.value as ColorFormat)}
+                className="text-sm rounded-md px-2 py-1.5 focus:outline-none focus:ring-2 border cursor-pointer"
+                style={{ ...inputStyle, outlineColor: shellTheme.primary }}
+              >
+                <option value="hex">HEX</option>
+                <option value="rgb">RGB</option>
+                <option value="hsl">HSL</option>
+                <option value="oklch">OKLCH</option>
+              </select>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0 ml-2">
+          
+          <div className="h-6 w-px mx-1 bg-current opacity-20"></div>
+
+          <button 
+             onClick={() => setShowOptions(!showOptions)} 
+             className={`p-1.5 rounded-lg transition-colors ${showOptions ? 'bg-current text-white/90' : 'hover:bg-white/10'}`}
+             style={showOptions ? { backgroundColor: shellTheme.primary, color: shellTheme.primaryFg } : {}}
+             title="Design Options"
+          >
+            <SlidersHorizontal size={18} />
+          </button>
+
+          <button 
+             onClick={() => fileInputRef.current?.click()} 
+             className="p-1.5 rounded-lg transition-colors hover:bg-white/10"
+             title="Pick from Image"
+          >
+            <ImageIcon size={18} />
+            <input type="file" ref={fileInputRef} onChange={handleImageUpload} className="hidden" accept="image/*" />
+          </button>
+
+          <button 
+            onClick={() => setShowHistory(!showHistory)} 
+            className={`p-1.5 rounded-lg transition-colors ${showHistory ? 'bg-current text-white/90' : 'hover:bg-white/10'}`}
+            style={showHistory ? { backgroundColor: shellTheme.primary, color: shellTheme.primaryFg } : {}}
+            title="History"
+          >
+            <History size={18} />
+          </button>
+
+           <button 
+            onClick={exportTheme} 
+            className="p-1.5 rounded-lg transition-colors hover:bg-white/10"
+            title="Export JSON"
+          >
+            <Download size={18} />
+          </button>
+
+          <button
+            onClick={() => setIsDarkUI(!isDarkUI)}
+            className="p-1.5 rounded-lg transition-colors hover:bg-white/10"
+            title="Toggle UI Theme"
+          >
+            {isDarkUI ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
+
+          <div className="h-6 w-px mx-1 bg-current opacity-20"></div>
+          
+          <button
+             onClick={toggleCollapse}
+             className={`p-1.5 rounded-lg transition-colors hover:bg-white/10 ${(!showSwatches && !showOptions) ? 'opacity-50' : ''}`}
+             title={showSwatches || showOptions ? "Collapse All Panels" : "Show Panels"}
+          >
+            {showSwatches || showOptions ? <PanelTopClose size={18} /> : <PanelTopOpen size={18} />}
+          </button>
+        </div>
+      </header>
+
+      {/* --- View Options Panel (Sliders) --- */}
+      {showOptions && (
+        <div 
+          className="border-b p-6 shrink-0 shadow-inner z-40 relative grid grid-cols-2 md:grid-cols-6 gap-8 transition-colors duration-500"
+          style={{ backgroundColor: shellTheme.bg, borderColor: shellTheme.border }}
+        >
+           {/* Border Width */}
+           <div className="space-y-3">
+             <div className="flex justify-between items-center">
+               <label className="text-xs font-bold uppercase tracking-wider opacity-70">Border</label>
+               <span className="text-xs font-mono opacity-50">{[0, 1, 2, 4][designOptions.borderWidth]}px</span>
+             </div>
+             <input 
+               type="range" min="0" max="3" step="1"
+               value={designOptions.borderWidth}
+               onChange={(e) => updateOption('borderWidth', parseInt(e.target.value))}
+               className="w-full h-1.5 bg-current opacity-20 rounded-lg appearance-none cursor-pointer accent-current"
+               style={{ accentColor: shellTheme.primary }}
+             />
+             <div className="flex justify-between text-[10px] opacity-40 px-0.5">
+               <span>None</span><span>Thick</span>
+             </div>
+           </div>
+
+           {/* Shadow Strength */}
+           <div className="space-y-3">
+             <div className="flex justify-between items-center">
+               <label className="text-xs font-bold uppercase tracking-wider opacity-70">Shadows</label>
+               <span className="text-xs font-mono opacity-50">Lvl {designOptions.shadowStrength}</span>
+             </div>
+             <input 
+               type="range" min="0" max="5" step="1"
+               value={designOptions.shadowStrength}
+               onChange={(e) => updateOption('shadowStrength', parseInt(e.target.value))}
+               className="w-full h-1.5 bg-current opacity-20 rounded-lg appearance-none cursor-pointer accent-current"
+               style={{ accentColor: shellTheme.primary }}
+             />
+             <div className="flex justify-between text-[10px] opacity-40 px-0.5">
+               <span>Flat</span><span>Float</span>
+             </div>
+           </div>
+
+           {/* Corner Radius */}
+           <div className="space-y-3">
+             <div className="flex justify-between items-center">
+               <label className="text-xs font-bold uppercase tracking-wider opacity-70">Roundness</label>
+               <span className="text-xs font-mono opacity-50">Lvl {designOptions.radius}</span>
+             </div>
+             <input 
+               type="range" min="0" max="5" step="1"
+               value={designOptions.radius}
+               onChange={(e) => updateOption('radius', parseInt(e.target.value))}
+               className="w-full h-1.5 bg-current opacity-20 rounded-lg appearance-none cursor-pointer accent-current"
+               style={{ accentColor: shellTheme.primary }}
+             />
+             <div className="flex justify-between text-[10px] opacity-40 px-0.5">
+               <span>Square</span><span>Round</span>
+             </div>
+           </div>
+
+           {/* Gradient Level */}
+           <div className="space-y-3">
+             <div className="flex justify-between items-center">
+               <label className="text-xs font-bold uppercase tracking-wider opacity-70">Gradients</label>
+               <span className="text-xs font-mono opacity-50">Lvl {designOptions.gradientLevel}</span>
+             </div>
+             <input 
+               type="range" min="0" max="2" step="1"
+               value={designOptions.gradientLevel}
+               onChange={(e) => updateOption('gradientLevel', parseInt(e.target.value))}
+               className="w-full h-1.5 bg-current opacity-20 rounded-lg appearance-none cursor-pointer accent-current"
+               style={{ accentColor: shellTheme.primary }}
+             />
+             <div className="flex justify-between text-[10px] opacity-40 px-0.5">
+               <span>Solid</span><span>Vivid</span>
+             </div>
+           </div>
+
+            {/* Saturation Level */}
+           <div className="space-y-3">
+             <div className="flex justify-between items-center">
+               <label className="text-xs font-bold uppercase tracking-wider opacity-70">Saturation</label>
+               <span className="text-xs font-mono opacity-50">Lvl {designOptions.saturationLevel}</span>
+             </div>
+             <input 
+               type="range" min="0" max="4" step="1"
+               value={designOptions.saturationLevel}
+               onChange={(e) => updateOption('saturationLevel', parseInt(e.target.value))}
+               className="w-full h-1.5 bg-current opacity-20 rounded-lg appearance-none cursor-pointer accent-current"
+               style={{ accentColor: shellTheme.primary }}
+             />
+             <div className="flex justify-between text-[10px] opacity-40 px-0.5">
+               <span>Mono</span><span>Vivid</span>
+             </div>
+           </div>
+
+           {/* Contrast Level */}
+           <div className="space-y-3">
+             <div className="flex justify-between items-center">
+               <label className="text-xs font-bold uppercase tracking-wider opacity-70">Contrast</label>
+               <span className="text-xs font-mono opacity-50">Lvl {designOptions.contrastLevel}</span>
+             </div>
+             <input 
+               type="range" min="0" max="4" step="1"
+               value={designOptions.contrastLevel}
+               onChange={(e) => updateOption('contrastLevel', parseInt(e.target.value))}
+               className="w-full h-1.5 bg-current opacity-20 rounded-lg appearance-none cursor-pointer accent-current"
+               style={{ accentColor: shellTheme.primary }}
+             />
+             <div className="flex justify-between text-[10px] opacity-40 px-0.5">
+               <span>Soft</span><span>Max</span>
+             </div>
+           </div>
+        </div>
+      )}
+
+      {/* --- History Drawer --- */}
+      {showHistory && (
+        <div 
+          className="h-32 border-b flex overflow-x-auto p-4 gap-4 shrink-0 shadow-inner z-40 relative"
+          style={{ backgroundColor: shellTheme.bg, borderColor: shellTheme.border }}
+        >
+          {history.map((theme, idx) => (
+            <button 
+              key={theme.id}
+              onClick={() => {
+                setHistoryIndex(idx);
+                setCurrentTheme(theme);
+              }}
+              className={`flex flex-col min-w-[80px] w-20 rounded-lg overflow-hidden border-2 transition-all hover:scale-105 ${historyIndex === idx ? 'ring-2' : 'border-transparent'}`}
+              style={{ 
+                borderColor: historyIndex === idx ? shellTheme.primary : 'transparent', 
+                ringColor: shellTheme.primary 
+              }}
+            >
+              <div className="flex-1 w-full flex">
+                 <div className="w-1/2 h-full" style={{ backgroundColor: theme.light.primary }}></div>
+                 <div className="w-1/2 h-full" style={{ backgroundColor: theme.dark.bg }}></div>
+              </div>
+              <div 
+                className="h-6 text-[10px] flex items-center justify-center font-mono"
+                style={{ backgroundColor: shellTheme.surface2, color: shellTheme.textMuted }}
+              >
+                {theme.mode.slice(0,4)}
+              </div>
+            </button>
+          ))}
+          {history.length === 0 && <div className="text-sm opacity-50 m-auto">No history yet</div>}
+        </div>
+      )}
+
+      {/* --- Main Content Area (Sync Scroll) --- */}
+      <div className="flex-1 overflow-y-auto relative scroll-smooth group">
+        
+        {/* Sticky Swatches */}
+        {showSwatches && (
+        <SwatchStrip 
+           light={currentTheme.light} 
+           dark={currentTheme.dark} 
+           format={format}
+           onFormatChange={setFormat}
+           isDarkUI={isDarkUI}
+           onUpdate={handleTokenUpdate}
+        />
+        )}
+
+        {/* Split Preview */}
+        <div className="flex min-h-[calc(100vh-140px)]">
+          {/* Light Side */}
+          <div 
+            className="w-1/2 bg-t-bg transition-colors duration-500" 
+            style={getStyleVars(currentTheme.light)}
+          >
+             <PreviewSection themeName="Light" options={designOptions} />
+          </div>
+
+          {/* Dark Side */}
+          <div 
+            className="w-1/2 bg-t-bg transition-colors duration-500" 
+            style={getStyleVars(currentTheme.dark)}
+          >
+             <PreviewSection themeName="Dark" options={designOptions} />
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+};
+
+export default App;
