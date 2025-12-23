@@ -55,7 +55,7 @@ const VolumeSlider: React.FC<{
   bClass: string;
   sClass: string;
 }> = ({ rClass, bClass, sClass }) => {
-  const [volume, setVolume] = useState(75);
+  const [volume, setVolume] = useState(69);
   
   return (
     <div className="space-y-2">
@@ -72,6 +72,54 @@ const VolumeSlider: React.FC<{
         className={`w-full h-2 bg-t-surface2 ${rClass} ${bClass} ${sClass} appearance-none cursor-pointer accent-t-primary transition-colors`} 
       />
     </div>
+  );
+};
+const HeroBanner: React.FC<{
+  rClass: string;
+  sClass: string;
+  badgeBorder: string;
+  themeName: string;
+}> = ({ rClass, sClass, badgeBorder, themeName }) => {
+  return (
+    <section className="space-y-4">
+      <h3 className="text-sm font-bold uppercase tracking-wider text-t-muted">Display Section</h3>
+      <div className={`relative overflow-hidden ${rClass} ${sClass} aspect-[16/9] flex items-center justify-center p-8 sm:p-12 group`}>
+        {/* Real Background Image */}
+        <div className="absolute inset-0 transition-transform duration-1000 group-hover:scale-110">
+          <img 
+            src="/hero-bg.jpg" 
+            alt="Hero Background" 
+            className="w-full h-full object-cover"
+          />
+        </div>
+
+        {/* Dynamic Theme Overlay */}
+        <div className={`absolute inset-0 ${themeName === 'Dark' ? 'bg-black/60' : 'bg-white/60'} backdrop-blur-[1px] transition-colors duration-500`} />
+        
+        {/* Gradient Accents */}
+        <div className="absolute inset-0 opacity-30 mix-blend-overlay transition-all duration-700 group-hover:opacity-40" 
+             style={{ backgroundImage: `radial-gradient(circle at 20% 30%, var(--primary) 0%, transparent 60%), radial-gradient(circle at 80% 70%, var(--accent) 0%, transparent 60%)` }} />
+        
+        {/* SVG Mesh Pattern Overlay for Texture */}
+        <div className="absolute inset-0 opacity-[0.05] pointer-events-none" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/08/svg'%3E%3Cpath d='M30 0l25.98 15v30L30 60 4.02 45V15z' fill-rule='evenodd' stroke='%23000' stroke-width='1' fill='none'/%3E%3C/svg%3E")` }} />
+
+        {/* Content */}
+        <div className="relative z-10 text-center space-y-4 max-w-2xl px-4">
+          <div className={`inline-block px-3 py-1 bg-t-primary text-t-primaryFg text-[10px] font-bold uppercase tracking-[0.2em] shadow-lg rounded-full mb-2`}>
+            Premium Experience
+          </div>
+          <h2 className="text-3xl sm:text-5xl lg:text-7xl font-black text-t-text leading-[1.05] tracking-tight drop-shadow-xl transition-all duration-500 group-hover:scale-[1.01]">
+            Design that speaks <span className="text-t-primary font-serif italic">louder</span> than words.
+          </h2>
+          <p className="text-t-text font-medium text-sm sm:text-lg max-w-lg mx-auto leading-relaxed drop-shadow-md">
+            Elevate your interface with harmonious palettes and perfectly balanced typography.
+          </p>
+        </div>
+        
+        {/* Glass Edge & Light Border */}
+        <div className={`absolute inset-0 border-2 border-white/10 pointer-events-none ${rClass}`} />
+      </div>
+    </section>
   );
 };
 
@@ -199,6 +247,13 @@ const PreviewSection: React.FC<PreviewProps> = ({ themeName, options }) => {
       </section>
 
       <hr className={options.borderWidth > 0 ? 'border-t-border' : 'border-transparent'} />
+
+      <HeroBanner 
+        rClass={rClass} 
+        sClass={sClass} 
+        badgeBorder={badgeBorder}
+        themeName={themeName}
+      />
 
       {/* Buttons & Actions */}
       <section className="space-y-6">
