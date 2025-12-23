@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   Palette, RefreshCw, History, Upload, Image as ImageIcon, 
   Trash2, Undo, Lock, ChevronLeft, ChevronRight, Share, Download,
-  Moon, Sun, SlidersHorizontal, ChevronUp, ChevronDown, Shuffle, PanelTopClose, PanelTopOpen, X
+  Moon, Sun, SlidersHorizontal, ChevronUp, ChevronDown, Shuffle, PanelTopClose, PanelTopOpen, X, Menu
 } from 'lucide-react';
 import { ThemeTokens, DualTheme, GenerationMode, ColorFormat, DesignOptions, LockedColors } from './types';
 import { generateTheme, extractColorFromImage, formatColor } from './utils/colorUtils';
@@ -83,6 +83,7 @@ const App: React.FC = () => {
 
   const [showMobileNotice, setShowMobileNotice] = useState(true);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   
   const [designOptions, setDesignOptions] = useState<DesignOptions>({
     borderWidth: 1,
@@ -365,52 +366,79 @@ const App: React.FC = () => {
 
   return (
     <div 
-      className="flex flex-col h-screen overflow-hidden font-sans transition-colors duration-500"
+      className="flex flex-col h-screen overflow-hidden overflow-x-hidden font-sans transition-colors duration-500"
       style={shellStyles}
     >
       
       {/* --- Toolbar --- */}
       <header 
-        className="h-16 border-b flex items-center justify-between px-3 lg:px-4 shrink-0 z-50 relative transition-colors duration-500"
+        className="border-b shrink-0 z-50 relative transition-colors duration-500"
         style={{ borderColor: shellTheme.border, backgroundColor: shellTheme.bg }}
       >
-        <div className="flex items-center gap-4 overflow-x-auto no-scrollbar">
-          <div className="hidden sm:flex items-center gap-2 shrink-0">
-             <div className="w-8 h-8 rounded-lg shadow-sm flex items-center justify-center" style={{ backgroundColor: shellTheme.primary }}>
-                <TaichiIcon size={24} />
-             </div>
-             <h1 className="font-bold text-lg hidden md:block">Taichi Theme Generator</h1>
-          </div>
-
-          <div className="hidden md:flex items-center rounded-lg p-0.5 gap-0.5 shrink-0" style={{ backgroundColor: shellTheme.surface2 }}>
-             <button onClick={undo} disabled={historyIndex <= 0} className="p-1.5 rounded-md disabled:opacity-30 transition-colors hover:bg-white/10">
-               <Undo size={16} />
-             </button>
-             <div className="w-px h-4 mx-1 bg-current opacity-20"></div>
-             <button onClick={redo} disabled={historyIndex >= history.length - 1} className="p-1.5 rounded-md disabled:opacity-30 transition-colors scale-x-[-1] hover:bg-white/10">
-               <Undo size={16} />
-             </button>
-          </div>
-
+        {/* Main Header Bar */}
+        <div className="h-16 flex items-center justify-between px-3 lg:px-4">
+          {/* Left: Logo */}
           <div className="flex items-center gap-2 shrink-0">
-             <button 
-               onClick={() => generateNewTheme(mode)}
-               className="text-white rounded-md font-medium shadow-md transition-all active:transform active:scale-95 flex items-center overflow-hidden group ml-2"
-               style={{ backgroundColor: shellTheme.primary, color: shellTheme.primaryFg }}
-             >
-               <div className="px-2 py-1 sm:pl-3 sm:pr-2 sm:py-1.5 flex items-center gap-1.5 sm:gap-2">
-                 <Shuffle size={14} className="sm:w-4 sm:h-4" />
-                 <span className="font-semibold text-xs sm:text-sm">Generate</span>
-               </div>
-               <div className="hidden sm:block pr-1.5 py-1">
-                 <div className="bg-black/20 text-current text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm">
-                     Space
-                 </div>
-               </div>
-             </button>
+            <div className="w-8 h-8 rounded-lg shadow-sm flex items-center justify-center" style={{ backgroundColor: shellTheme.primary }}>
+              <TaichiIcon size={24} />
+            </div>
+            <h1 className="font-bold text-lg hidden md:block">Taichi Theme Generator</h1>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          {/* Mobile: Generate + Palette Buttons */}
+          <div className="md:hidden flex items-center gap-2">
+            <button 
+              onClick={() => generateNewTheme(mode)}
+              className="text-white rounded-lg font-medium shadow-md transition-all active:transform active:scale-95 flex items-center overflow-hidden"
+              style={{ backgroundColor: shellTheme.primary, color: shellTheme.primaryFg }}
+            >
+              <div className="px-3 py-2 flex items-center gap-1.5">
+                <Shuffle size={14} />
+                <span className="font-semibold text-xs">Generate</span>
+              </div>
+            </button>
+
+            <button 
+              onClick={() => setShowSwatches(!showSwatches)} 
+              className={`p-2 rounded-lg transition-colors ${showSwatches ? 'bg-current text-white' : 'hover:bg-white/10'}`}
+              style={showSwatches ? { backgroundColor: shellTheme.primary, color: shellTheme.primaryFg } : {}}
+              title="Color Palette"
+            >
+              <Palette size={18} />
+            </button>
+          </div>
+
+          {/* Desktop: All Controls */}
+          <div className="hidden md:flex items-center gap-4 overflow-x-auto no-scrollbar">
+            <div className="flex items-center rounded-lg p-0.5 gap-0.5 shrink-0" style={{ backgroundColor: shellTheme.surface2 }}>
+              <button onClick={undo} disabled={historyIndex <= 0} className="p-1.5 rounded-md disabled:opacity-30 transition-colors hover:bg-white/10">
+                <Undo size={16} />
+              </button>
+              <div className="w-px h-4 mx-1 bg-current opacity-20"></div>
+              <button onClick={redo} disabled={historyIndex >= history.length - 1} className="p-1.5 rounded-md disabled:opacity-30 transition-colors scale-x-[-1] hover:bg-white/10">
+                <Undo size={16} />
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <button 
+                onClick={() => generateNewTheme(mode)}
+                className="text-white rounded-md font-medium shadow-md transition-all active:transform active:scale-95 flex items-center overflow-hidden group"
+                style={{ backgroundColor: shellTheme.primary, color: shellTheme.primaryFg }}
+              >
+                <div className="pl-3 pr-2 py-1.5 flex items-center gap-2">
+                  <Shuffle size={16} />
+                  <span className="font-semibold text-sm">Generate</span>
+                </div>
+                <div className="pr-1.5 py-1">
+                  <div className="bg-black/20 text-current text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm">
+                    Space
+                  </div>
+                </div>
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
               <select 
                 value={mode} 
                 onChange={(e) => setMode(e.target.value as GenerationMode)}
@@ -440,75 +468,203 @@ const App: React.FC = () => {
                 <option value="oklch">OKLCH</option>
                 <option value="display-p3">Display P3</option>
               </select>
+            </div>
+
+            <div className="h-6 w-px mx-1 bg-current opacity-20"></div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <button 
+                onClick={() => setShowSwatches(!showSwatches)} 
+                className={`p-1.5 rounded-lg transition-colors ${showSwatches ? 'bg-current text-white/90' : 'hover:bg-white/10'}`}
+                style={showSwatches ? { backgroundColor: shellTheme.primary, color: shellTheme.primaryFg } : {}}
+                title="Color Palette"
+              >
+                <Palette size={18} />
+              </button>
+
+              <button 
+                onClick={() => setShowOptions(!showOptions)} 
+                className={`p-1.5 rounded-lg transition-colors ${showOptions ? 'bg-current text-white/90' : 'hover:bg-white/10'}`}
+                style={showOptions ? { backgroundColor: shellTheme.primary, color: shellTheme.primaryFg } : {}}
+                title="Design Options"
+              >
+                <SlidersHorizontal size={18} />
+              </button>
+
+              <button 
+                onClick={() => fileInputRef.current?.click()} 
+                className="p-1.5 rounded-lg transition-colors hover:bg-white/10"
+                title="Pick from Image"
+              >
+                <ImageIcon size={18} />
+                <input type="file" ref={fileInputRef} onChange={handleImageUpload} className="hidden" accept="image/*" />
+              </button>
+
+              <button 
+                onClick={() => setShowHistory(!showHistory)} 
+                className={`p-1.5 rounded-lg transition-colors ${showHistory ? 'bg-current text-white/90' : 'hover:bg-white/10'}`}
+                style={showHistory ? { backgroundColor: shellTheme.primary, color: shellTheme.primaryFg } : {}}
+                title="History"
+              >
+                <History size={18} />
+              </button>
+
+              <button 
+                onClick={exportTheme} 
+                className="p-1.5 rounded-lg transition-colors hover:bg-white/10"
+                title="Export JSON"
+              >
+                <Download size={18} />
+              </button>
+
+              <button 
+                onClick={() => setShowShareModal(true)} 
+                className="p-1.5 rounded-lg transition-colors hover:bg-white/10"
+                title="Share Theme"
+              >
+                <Share size={18} />
+              </button>
+
+              <button
+                onClick={() => setIsDarkUI(!isDarkUI)}
+                className="p-1.5 rounded-lg transition-colors hover:bg-white/10"
+                title="Toggle UI Theme"
+              >
+                {isDarkUI ? <Sun size={18} /> : <Moon size={18} />}
+              </button>
+            </div>
           </div>
+
+          {/* Right: Hamburger Menu (mobile only) */}
+          <button 
+            onClick={() => setShowMobileMenu(!showMobileMenu)}
+            className="md:hidden p-2 rounded-lg transition-colors hover:bg-white/10"
+            aria-label="Menu"
+          >
+            <Menu size={24} />
+          </button>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0 ml-2">
-          
-          <div className="h-6 w-px mx-1 bg-current opacity-20"></div>
-
-          <button 
-             onClick={() => setShowSwatches(!showSwatches)} 
-             className={`p-1.5 rounded-lg transition-colors ${showSwatches ? 'bg-current text-white/90' : 'hover:bg-white/10'}`}
-             style={showSwatches ? { backgroundColor: shellTheme.primary, color: shellTheme.primaryFg } : {}}
-             title="Color Palette"
+        {/* Mobile Menu Dropdown */}
+        {showMobileMenu && (
+          <div 
+            className="md:hidden border-t p-4 space-y-4"
+            style={{ borderColor: shellTheme.border, backgroundColor: shellTheme.surface }}
           >
-            <Palette size={18} />
-          </button>
+            {/* Mode and Format Selectors */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider opacity-70">Mode</label>
+              <select 
+                value={mode} 
+                onChange={(e) => setMode(e.target.value as GenerationMode)}
+                className="w-full text-sm rounded-md px-3 py-2 focus:outline-none focus:ring-2 border cursor-pointer"
+                style={{ ...inputStyle, outlineColor: shellTheme.primary }}
+              >
+                <option value="random">Random</option>
+                <option value="monochrome">Monochrome</option>
+                <option value="analogous">Analogous</option>
+                <option value="complementary">Complementary</option>
+                <option value="split-complementary">Split Complementary</option>
+                <option value="triadic">Triadic</option>
+              </select>
+            </div>
 
-          <button 
-             onClick={() => setShowOptions(!showOptions)} 
-             className={`p-1.5 rounded-lg transition-colors ${showOptions ? 'bg-current text-white/90' : 'hover:bg-white/10'}`}
-             style={showOptions ? { backgroundColor: shellTheme.primary, color: shellTheme.primaryFg } : {}}
-             title="Design Options"
-          >
-            <SlidersHorizontal size={18} />
-          </button>
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider opacity-70">Format</label>
+              <select 
+                value={format} 
+                onChange={(e) => setFormat(e.target.value as ColorFormat)}
+                className="w-full text-sm rounded-md px-3 py-2 focus:outline-none focus:ring-2 border cursor-pointer"
+                style={{ ...inputStyle, outlineColor: shellTheme.primary }}
+              >
+                <option value="hex">HEX</option>
+                <option value="rgb">RGB</option>
+                <option value="cmyk">CMYK</option>
+                <option value="hsl">HSL</option>
+                <option value="lab">LAB</option>
+                <option value="lch">LCH</option>
+                <option value="oklch">OKLCH</option>
+                <option value="display-p3">Display P3</option>
+              </select>
+            </div>
 
-          <button 
-             onClick={() => fileInputRef.current?.click()} 
-             className="p-1.5 rounded-lg transition-colors hover:bg-white/10"
-             title="Pick from Image"
-          >
-            <ImageIcon size={18} />
-            <input type="file" ref={fileInputRef} onChange={handleImageUpload} className="hidden" accept="image/*" />
-          </button>
+            {/* Action Buttons */}
+            <div className="grid grid-cols-2 gap-2 pt-2">
+              <button 
+                onClick={() => { setShowSwatches(!showSwatches); setShowMobileMenu(false); }}
+                className={`p-3 rounded-lg transition-colors flex items-center justify-center gap-2 ${showSwatches ? 'bg-current text-white' : 'border'}`}
+                style={showSwatches ? { backgroundColor: shellTheme.primary, color: shellTheme.primaryFg } : { borderColor: shellTheme.border }}
+              >
+                <Palette size={18} />
+                <span className="text-sm font-medium">Palette</span>
+              </button>
 
-          <button 
-            onClick={() => setShowHistory(!showHistory)} 
-            className={`p-1.5 rounded-lg transition-colors ${showHistory ? 'bg-current text-white/90' : 'hover:bg-white/10'}`}
-            style={showHistory ? { backgroundColor: shellTheme.primary, color: shellTheme.primaryFg } : {}}
-            title="History"
-          >
-            <History size={18} />
-          </button>
+              <button 
+                onClick={() => { setShowOptions(!showOptions); setShowMobileMenu(false); }}
+                className={`p-3 rounded-lg transition-colors flex items-center justify-center gap-2 ${showOptions ? 'bg-current text-white' : 'border'}`}
+                style={showOptions ? { backgroundColor: shellTheme.primary, color: shellTheme.primaryFg } : { borderColor: shellTheme.border }}
+              >
+                <SlidersHorizontal size={18} />
+                <span className="text-sm font-medium">Options</span>
+              </button>
 
-           <button 
-            onClick={exportTheme} 
-            className="p-1.5 rounded-lg transition-colors hover:bg-white/10"
-            title="Export JSON"
-          >
-            <Download size={18} />
-          </button>
+              <button 
+                onClick={() => { fileInputRef.current?.click(); setShowMobileMenu(false); }}
+                className="p-3 rounded-lg border transition-colors flex items-center justify-center gap-2"
+                style={{ borderColor: shellTheme.border }}
+              >
+                <ImageIcon size={18} />
+                <span className="text-sm font-medium">Image</span>
+              </button>
 
-          <button 
-            onClick={() => setShowShareModal(true)} 
-            className="p-1.5 rounded-lg transition-colors hover:bg-white/10"
-            title="Share Theme"
-          >
-            <Share size={18} />
-          </button>
+              <button 
+                onClick={() => { setShowHistory(!showHistory); setShowMobileMenu(false); }}
+                className={`p-3 rounded-lg transition-colors flex items-center justify-center gap-2 ${showHistory ? 'bg-current text-white' : 'border'}`}
+                style={showHistory ? { backgroundColor: shellTheme.primary, color: shellTheme.primaryFg } : { borderColor: shellTheme.border }}
+              >
+                <History size={18} />
+                <span className="text-sm font-medium">History</span>
+              </button>
 
-          <button
-            onClick={() => setIsDarkUI(!isDarkUI)}
-            className="p-1.5 rounded-lg transition-colors hover:bg-white/10"
-            title="Toggle UI Theme"
-          >
-            {isDarkUI ? <Sun size={18} /> : <Moon size={18} />}
-          </button>
+              <button 
+                onClick={() => { exportTheme(); setShowMobileMenu(false); }}
+                className="p-3 rounded-lg border transition-colors flex items-center justify-center gap-2"
+                style={{ borderColor: shellTheme.border }}
+              >
+                <Download size={18} />
+                <span className="text-sm font-medium">Export</span>
+              </button>
 
+              <button 
+                onClick={() => { setShowShareModal(true); setShowMobileMenu(false); }}
+                className="p-3 rounded-lg border transition-colors flex items-center justify-center gap-2"
+                style={{ borderColor: shellTheme.border }}
+              >
+                <Share size={18} />
+                <span className="text-sm font-medium">Share</span>
+              </button>
 
-        </div>
+              <button
+                onClick={() => { setIsDarkUI(!isDarkUI); setShowMobileMenu(false); }}
+                className="p-3 rounded-lg border transition-colors flex items-center justify-center gap-2"
+                style={{ borderColor: shellTheme.border }}
+              >
+                {isDarkUI ? <Sun size={18} /> : <Moon size={18} />}
+                <span className="text-sm font-medium">{isDarkUI ? 'Light' : 'Dark'}</span>
+              </button>
+
+              <button 
+                onClick={() => { undo(); setShowMobileMenu(false); }}
+                disabled={historyIndex <= 0}
+                className="p-3 rounded-lg border transition-colors flex items-center justify-center gap-2 disabled:opacity-30"
+                style={{ borderColor: shellTheme.border }}
+              >
+                <Undo size={18} />
+                <span className="text-sm font-medium">Undo</span>
+              </button>
+            </div>
+          </div>
+        )}
       </header>
 
       {/* Mobile Notice Banner */}

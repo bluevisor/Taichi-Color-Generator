@@ -109,6 +109,12 @@
       };
     </script>
     <style>
+      /* Prevent horizontal scroll on mobile */
+      html, body {
+        overflow-x: hidden;
+        max-width: 100vw;
+      }
+      
       /* Custom Scrollbar for a cleaner look */
       ::-webkit-scrollbar {
         width: 8px;
@@ -123,6 +129,15 @@
       }
       ::-webkit-scrollbar-thumb:hover {
         background: #94a3b8;
+      }
+      
+      /* Hide scrollbar for elements with no-scrollbar class */
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
       }
     </style>
     <script type="importmap">

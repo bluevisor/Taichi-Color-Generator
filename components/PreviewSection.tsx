@@ -84,7 +84,7 @@ const HeroBanner: React.FC<{
   return (
     <section className="space-y-4">
       <h3 className="text-sm font-bold uppercase tracking-wider text-t-muted">Display Section</h3>
-      <div className={`relative overflow-hidden ${rClass} ${sClass} ${bClass} aspect-[16/9] flex items-center justify-center p-8 sm:p-12 group`}>
+      <div className={`relative overflow-hidden ${rClass} ${sClass} ${bClass} aspect-[16/9] flex items-center justify-center p-4 sm:p-8 md:p-12 group`}>
         {/* Real Background Image */}
         <div className="absolute inset-0 transition-transform duration-[3000ms] ease-in-out group-hover:scale-110 group-hover:rotate-1">
           <img 
@@ -105,14 +105,14 @@ const HeroBanner: React.FC<{
         <div className="absolute inset-0 opacity-[0.05] pointer-events-none" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/08/svg'%3E%3Cpath d='M30 0l25.98 15v30L30 60 4.02 45V15z' fill-rule='evenodd' stroke='%23000' stroke-width='1' fill='none'/%3E%3C/svg%3E")` }} />
 
         {/* Content */}
-        <div className="relative z-10 text-center space-y-4 max-w-2xl px-4">
-          <div className={`inline-block px-3 py-1 bg-t-secondary text-t-secondaryFg text-[10px] font-bold uppercase tracking-[0.2em] shadow-lg rounded-full mb-2`}>
+        <div className="relative z-10 text-center space-y-2 sm:space-y-4 max-w-2xl px-2 sm:px-4">
+          <div className={`inline-block px-2 sm:px-3 py-0.5 sm:py-1 bg-t-secondary text-t-secondaryFg text-[8px] sm:text-[10px] font-bold uppercase tracking-[0.15em] sm:tracking-[0.2em] shadow-lg rounded-full mb-1 sm:mb-2`}>
             Premium Experience
           </div>
-          <h2 className="text-3xl sm:text-5xl lg:text-7xl font-black text-t-text leading-[1.05] tracking-tight drop-shadow-xl transition-all duration-500 group-hover:scale-[1.01]">
+          <h2 className="text-2xl sm:text-3xl md:text-5xl lg:text-7xl font-black text-t-text leading-[1.05] tracking-tight drop-shadow-xl transition-all duration-500 group-hover:scale-[1.01]">
             Design your <span className="text-t-primary font-serif italic">vision</span> in <span className="text-t-secondary font-serif italic">color</span>.
           </h2>
-          <p className="text-t-text font-medium text-sm sm:text-lg max-w-lg mx-auto leading-relaxed drop-shadow-md">
+          <p className="text-t-text font-medium text-xs sm:text-sm md:text-lg max-w-lg mx-auto leading-relaxed drop-shadow-md">
             Elevate your interface with harmonious palettes and perfectly balanced typography.
           </p>
         </div>
