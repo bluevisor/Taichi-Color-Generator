@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   Palette, RefreshCw, History, Upload, Image as ImageIcon, 
   Trash2, Undo, Lock, ChevronLeft, ChevronRight, Share, Download,
-  Moon, Sun, SlidersHorizontal, ChevronUp, ChevronDown, Shuffle, PanelTopClose, PanelTopOpen
+  Moon, Sun, SlidersHorizontal, ChevronUp, ChevronDown, Shuffle, PanelTopClose, PanelTopOpen, X
 } from 'lucide-react';
 import { ThemeTokens, DualTheme, GenerationMode, ColorFormat, DesignOptions } from './types';
 import { generateTheme, extractColorFromImage, formatColor } from './utils/colorUtils';
@@ -73,6 +73,7 @@ const App: React.FC = () => {
   const [showOptions, setShowOptions] = useState(false);
   const [isDarkUI, setIsDarkUI] = useState(false);
   const [showSwatches, setShowSwatches] = useState(true);
+  const [showMobileNotice, setShowMobileNotice] = useState(true);
   
   const [designOptions, setDesignOptions] = useState<DesignOptions>({
     borderWidth: 1,
@@ -280,7 +281,7 @@ const App: React.FC = () => {
         style={{ borderColor: shellTheme.border, backgroundColor: shellTheme.bg }}
       >
         <div className="flex items-center gap-4 overflow-x-auto no-scrollbar">
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="hidden sm:flex items-center gap-2 shrink-0">
              <div className="w-8 h-8 rounded-lg shadow-sm flex items-center justify-center" style={{ backgroundColor: shellTheme.primary }}>
                 <TaichiIcon size={24} />
              </div>
@@ -303,11 +304,11 @@ const App: React.FC = () => {
                className="text-white rounded-md font-medium shadow-md transition-all active:transform active:scale-95 flex items-center overflow-hidden group ml-2"
                style={{ backgroundColor: shellTheme.primary, color: shellTheme.primaryFg }}
              >
-               <div className="pl-3 pr-2 py-1.5 flex items-center gap-2">
-                 <Shuffle size={16} />
-                 <span className="font-semibold text-sm">Generate</span>
+               <div className="px-2 py-1 sm:pl-3 sm:pr-2 sm:py-1.5 flex items-center gap-1.5 sm:gap-2">
+                 <Shuffle size={14} className="sm:w-4 sm:h-4" />
+                 <span className="font-semibold text-xs sm:text-sm">Generate</span>
                </div>
-               <div className="pr-1.5 py-1">
+               <div className="hidden sm:block pr-1.5 py-1">
                  <div className="bg-black/20 text-current text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm">
                      Space
                  </div>
@@ -407,6 +408,23 @@ const App: React.FC = () => {
 
         </div>
       </header>
+
+      {/* Mobile Notice Banner */}
+      {showMobileNotice && (
+        <div 
+          className="md:hidden flex items-center justify-between px-4 py-2 text-xs shrink-0"
+          style={{ backgroundColor: shellTheme.surface, borderBottom: `1px solid ${shellTheme.border}` }}
+        >
+          <span className="text-t-text">For best results, use this website on a desktop computer.</span>
+          <button 
+            onClick={() => setShowMobileNotice(false)}
+            className="ml-2 p-1 rounded hover:bg-black/10 transition-colors"
+            style={{ color: shellTheme.textMuted }}
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
 
       {/* --- View Options Panel (Sliders) --- */}
       {showOptions && (
@@ -581,10 +599,10 @@ const App: React.FC = () => {
         )}
 
         {/* Split Preview */}
-        <div className="flex min-h-[calc(100vh-140px)]">
+        <div className="flex flex-col md:flex-row min-h-[calc(100vh-140px)]">
           {/* Light Side */}
           <div 
-            className="w-1/2 bg-t-bg transition-colors duration-500" 
+            className="w-full md:w-1/2 bg-t-bg transition-colors duration-500" 
             style={getStyleVars(currentTheme.light)}
           >
              <PreviewSection themeName="Light" options={designOptions} />
@@ -592,7 +610,7 @@ const App: React.FC = () => {
 
           {/* Dark Side */}
           <div 
-            className="w-1/2 bg-t-bg transition-colors duration-500" 
+            className="w-full md:w-1/2 bg-t-bg transition-colors duration-500" 
             style={getStyleVars(currentTheme.dark)}
           >
              <PreviewSection themeName="Dark" options={designOptions} />

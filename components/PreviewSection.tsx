@@ -21,12 +21,12 @@ const NavTabsDemo: React.FC<{
   options: DesignOptions;
 }> = ({ bClass, rClass, sClass, bBottom, rClassInner, options }) => {
   const [activeTab, setActiveTab] = useState('Dashboard');
-  const tabs = ['Dashboard', 'Team', 'Projects', 'Settings'];
+  const tabs = ['Dashboard', 'Team', 'Settings'];
   
   return (
     <div className={`${bClass} ${rClass} ${sClass} overflow-hidden bg-t-surface`}>
-      <div className={`${bBottom} p-4 flex items-center justify-between bg-t-surface2/30`}>
-        <div className="flex gap-4 text-sm font-medium text-t-muted">
+      <div className={`${bBottom} p-4 flex items-center justify-between gap-4 bg-t-surface2/30`}>
+        <div className="flex gap-3 sm:gap-4 text-sm font-medium text-t-muted flex-wrap">
           {tabs.map(tab => (
             <span
               key={tab}
@@ -43,7 +43,7 @@ const NavTabsDemo: React.FC<{
             </span>
           ))}
         </div>
-        <div className={`h-8 w-8 ${rClass} bg-t-accent flex items-center justify-center text-t-accentFg text-xs shadow-sm hover:scale-110 transition-transform cursor-pointer`}>JD</div>
+        <div className={`h-8 w-8 shrink-0 ${rClass} bg-t-accent flex items-center justify-center text-t-accentFg text-xs shadow-sm hover:scale-110 transition-transform cursor-pointer`}>JD</div>
       </div>
     </div>
   );
@@ -192,6 +192,9 @@ const PreviewSection: React.FC<PreviewProps> = ({ themeName, options }) => {
         <p className="text-xl text-t-muted max-w-lg leading-relaxed">
           A collection of UI components using the generated palette. 
           Everything here is styled using semantic tokens like <code className={`bg-t-surface2 text-t-text px-3 py-1 text-base font-medium ${rClassInner}`}>primary</code> and <code className={`bg-t-surface2 text-t-text px-3 py-1 text-base font-medium ${rClassInner}`}>surface</code>.
+        </p>
+        <p className="text-sm text-t-muted opacity-75 mt-16">
+          Press <code className={`bg-t-surface2 text-t-primary px-2 py-0.5 font-mono font-bold ${rClassInner}`}>Space</code> to generate a new color theme pair.
         </p>
       </section>
 
