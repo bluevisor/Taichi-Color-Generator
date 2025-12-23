@@ -79,11 +79,12 @@ const HeroBanner: React.FC<{
   sClass: string;
   badgeBorder: string;
   themeName: string;
-}> = ({ rClass, sClass, badgeBorder, themeName }) => {
+  bClass: string;
+}> = ({ rClass, sClass, badgeBorder, themeName, bClass }) => {
   return (
     <section className="space-y-4">
       <h3 className="text-sm font-bold uppercase tracking-wider text-t-muted">Display Section</h3>
-      <div className={`relative overflow-hidden ${rClass} ${sClass} aspect-[16/9] flex items-center justify-center p-8 sm:p-12 group`}>
+      <div className={`relative overflow-hidden ${rClass} ${sClass} ${bClass} aspect-[16/9] flex items-center justify-center p-8 sm:p-12 group`}>
         {/* Real Background Image */}
         <div className="absolute inset-0 transition-transform duration-1000 group-hover:scale-110">
           <img 
@@ -253,6 +254,7 @@ const PreviewSection: React.FC<PreviewProps> = ({ themeName, options }) => {
         sClass={sClass} 
         badgeBorder={badgeBorder}
         themeName={themeName}
+        bClass={bClass}
       />
 
       {/* Buttons & Actions */}
