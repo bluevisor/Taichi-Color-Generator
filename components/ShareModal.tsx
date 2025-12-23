@@ -78,7 +78,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, url, theme }) 
           <div className="p-4 bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center space-y-2">
             <QRCodeSVG 
               value={url} 
-              size={180} 
+              size={220} 
               level="M" 
               includeMargin={true}
               imageSettings={{
