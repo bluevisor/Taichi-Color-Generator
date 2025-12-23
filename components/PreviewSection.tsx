@@ -86,7 +86,7 @@ const HeroBanner: React.FC<{
       <h3 className="text-sm font-bold uppercase tracking-wider text-t-muted">Display Section</h3>
       <div className={`relative overflow-hidden ${rClass} ${sClass} ${bClass} aspect-[16/9] flex items-center justify-center p-8 sm:p-12 group`}>
         {/* Real Background Image */}
-        <div className="absolute inset-0 transition-transform duration-1000 group-hover:scale-110">
+        <div className="absolute inset-0 transition-transform duration-[3000ms] ease-in-out group-hover:scale-110 group-hover:rotate-1">
           <img 
             src="/hero-bg.jpg" 
             alt="Hero Background" 
