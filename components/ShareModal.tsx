@@ -85,18 +85,18 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, url, theme }) 
         <div className="p-8 flex flex-col items-center space-y-8">
           
           {/* QR Code Card */}
-          <div className="p-4 bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center space-y-2">
+          <div className="p-2 bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center space-y-2">
             <QRCodeSVG 
               value={url} 
-              size={220} 
+              size={280} 
               level="M" 
               includeMargin={true}
               imageSettings={{
                 src: "/favicon.svg", 
                 x: undefined,
                 y: undefined,
-                height: 24,
-                width: 24,
+                height: 42,
+                width: 42,
                 excavate: true,
               }} 
             />
