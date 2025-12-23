@@ -1,4 +1,4 @@
-# 🎨 Taichi Color Generator
+# Taichi Color Generator
 
 <div align="center">
   <img src="public/favicon.svg" width="120" height="120" alt="Taichi Logo" />
@@ -11,31 +11,31 @@
 
 </div>
 
-## ✨ Features
+## Features
 
-- **🌓 Dual Theme Generation** - Simultaneously generate perfectly matched light
+- **Dual Theme Generation** - Simultaneously generate perfectly matched light
   and dark themes
-- **🎨 Multiple Color Harmonies** - Random, Monochrome, Analogous,
-  Complementary, Split-Complementary, and Triadic
-- **🎛️ Advanced Controls**
+- **Multiple Color Harmonies** - Random, Monochrome, Analogous, Complementary,
+  Split-Complementary, and Triadic
+- **Advanced Controls**
   - Saturation levels (0-4): From pure grayscale to maximum saturation
   - Contrast levels (1-5): Fine-tune readability and visual impact
   - Border width, shadow strength, roundness, and gradient controls
-- **📋 Smart Color Formats** - Export in HEX, RGB, HSL, or OKLCH
-- **🖼️ Image Color Extraction** - Generate palettes from uploaded images
-- **📜 History Management** - FIFO history with up to 20 saved themes
-- **⌨️ Keyboard Shortcuts**
+- **Smart Color Formats** - Export in HEX, RGB, HSL, or OKLCH
+- **Image Color Extraction** - Generate palettes from uploaded images
+- **History Management** - FIFO history with up to 20 saved themes
+- **Keyboard Shortcuts**
   - `Space` - Generate new theme
   - `Cmd/Ctrl + Z` - Undo
-- **🎯 Live Preview** - See your theme applied to real UI components instantly
-- **💾 Export & Import** - Save themes as JSON files with your preferred color
+- **Live Preview** - See your theme applied to real UI components instantly
+- **Export & Import** - Save themes as JSON files with your preferred color
   format
 
-## 🚀 Live Demo
+## Live Demo
 
 Visit [taichi.bucaastudio.com](https://taichi.bucaastudio.com) to try it out!
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Framework**: React 19 + TypeScript
 - **Build Tool**: Vite
@@ -43,7 +43,7 @@ Visit [taichi.bucaastudio.com](https://taichi.bucaastudio.com) to try it out!
 - **Icons**: Lucide React
 - **Deployment**: Vercel
 
-## 📦 Installation
+## Installation
 
 ### Prerequisites
 
@@ -73,14 +73,14 @@ Visit [taichi.bucaastudio.com](https://taichi.bucaastudio.com) to try it out!
    http://localhost:3000
    ```
 
-## 🏗️ Build for Production
+## Build for Production
 
 ```bash
 npm run build
 npm run preview
 ```
 
-## 📖 Usage
+## Usage
 
 ### Generating Themes
 
@@ -116,7 +116,7 @@ npm run preview
 - Click any history item to restore that theme
 - History is **persisted** in localStorage
 
-## 🎨 Color System
+## Color System
 
 The generator creates comprehensive design tokens:
 
@@ -127,20 +127,20 @@ The generator creates comprehensive design tokens:
 - **UI**: `border`, `ring`
 - **Foregrounds**: `primaryFg`, `secondaryFg`, etc.
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## 📄 License
+## License
 
 MIT License - feel free to use this project for personal or commercial purposes.
 
-## 🙏 Credits
+## Credits
 
 Created by [Bucaa Studio](https://bucaastudio.com)
 
 ---
 
 <div align="center">
-  Made with ❤️ using the Taichi philosophy of balance and harmony
+  Made with care using the Taichi philosophy of balance and harmony
 </div>
