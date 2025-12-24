@@ -497,13 +497,20 @@ export function generateTheme(
   // Base Color Lightness Modifiers (how "poppy" the colors are against bg)
   // Modulate based on brightness and contrast
   const baseLightColorMod = 46;
-  const baseDarkColorMod = 50; // Lowered from 60 to match light mode's richness (less pastel)
+  const baseDarkColorMod = 50; // Matched richness to light mode
   
   // Shift color lightness based on brightness compression
   const brightnessShift = brightnessLevel * 3; // -15 to +15
   
-  const lightColorMod = clamp(baseLightColorMod + brightnessShift, 30, 70);
-  const darkColorMod = clamp(baseDarkColorMod + brightnessShift, 35, 80);
+  // Contrast also affects color lightness (Dynamic Range)
+  // High contrast = Darker colors in Light Mode, Lighter colors in Dark Mode (more distance from BG)
+  // Low contrast = Lighter colors in Light Mode, Darker colors in Dark Mode (less distance from BG)
+  // contrastLevel is -5 to 5.
+  const contrastShiftLight = contrastLevel * -2; // Higher contrast -> Darker color
+  const contrastShiftDark = contrastLevel * 2;   // Higher contrast -> Lighter color
+  
+  const lightColorMod = clamp(baseLightColorMod + brightnessShift + contrastShiftLight, 30, 70);
+  const darkColorMod = clamp(baseDarkColorMod + brightnessShift + contrastShiftDark, 35, 80);
 
   // Random variance to background saturation if tinted
   const rnd = seededRandom(seedVal + 4);
@@ -526,7 +533,10 @@ export function generateTheme(
     card2: hslToHex(primaryHue, bgSat, applyBrightness(Math.min(100, lightSurfL - 3), brightnessLevel)),
     text: hslToHex(primaryHue, 10, applyBrightness(lightTextL, brightnessLevel)), 
     textMuted: hslToHex(primaryHue, 10, applyBrightness(lightTextL + 30, brightnessLevel)),
-    textOnColor: hslToHex(primaryHue, 10, 98), // Almost white, tinted with primary
+    // textOnColor: High lightness, but saturation follows slider. 
+    // If contrast is low (-5), reduce lightness slightly to be softer? No, usually text on color needs high contrast.
+    // We'll scale saturation with the level (0-10 index mapped to 0-30 tint)
+    textOnColor: hslToHex(primaryHue, Math.max(0, (saturationLevel + 5) * 2), 98), 
     
     primary: hslToHex(primaryHue, primarySat, applyBrightness(lightColorMod, brightnessLevel)), 
     primaryFg: '#ffffff', 
@@ -559,7 +569,7 @@ export function generateTheme(
     card2: hslToHex(primaryHue, bgSat, applyBrightness(darkSurfL + 5, brightnessLevel)),
     text: hslToHex(primaryHue, 10, applyBrightness(darkTextL, brightnessLevel)),
     textMuted: hslToHex(primaryHue, 10, applyBrightness(darkTextL - 30, brightnessLevel)),
-    textOnColor: hslToHex(primaryHue, 10, 98), // Almost white, tinted with primary
+    textOnColor: hslToHex(primaryHue, Math.max(0, (saturationLevel + 5) * 2), 98),
     
     primary: hslToHex(primaryHue, primarySat, applyBrightness(darkColorMod, brightnessLevel)),
     primaryFg: '#ffffff',

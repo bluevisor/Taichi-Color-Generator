@@ -216,10 +216,8 @@ const PreviewSection: React.FC<PreviewProps> = ({ themeName, options }) => {
     }
   };
   const sClass = `${getShadow(options.shadowStrength)} shadow-black/[${options.shadowOpacity / 100}]`;
-  // Hover only needs to change the size/offset, the color/opacity is inherited from sClass (if present) or we re-apply it if needed.
-  // Actually, standard tailwind shadow classes use the current shadow color variable.
-  // So we just need the new size class.
-  const sClassHover = getShadow(Math.min(5, options.shadowStrength + 2));
+  // We must re-apply the shadow color opacity on hover because a new shadow size utility might reset the shadow color defaults.
+  const sClassHover = `${getShadow(Math.min(5, options.shadowStrength + 2))} shadow-black/[${options.shadowOpacity / 100}]`;
   
   // Gradients
   // 0: None
