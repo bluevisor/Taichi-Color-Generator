@@ -100,8 +100,10 @@ const HeroBanner: React.FC<{
           />
         </div>
 
-        {/* Dynamic Theme Overlay */}
-        <div className={`absolute inset-0 ${themeName === 'Dark' ? 'bg-black/60' : 'bg-white/60'} backdrop-blur-[1px] transition-colors duration-500`} />
+        {/* Dynamic Theme Overlay - Fixed to card background */}
+        <div className={`absolute inset-0 bg-t-card transition-colors duration-500`} />
+        {/* Soft gradient overlay for flavor */}
+        <div className={`absolute inset-0 bg-gradient-to-tr from-t-bg/50 to-transparent`} />
         
         {/* Gradient Accents - Animated on hover */}
         <div 
@@ -114,13 +116,13 @@ const HeroBanner: React.FC<{
         />
         
         {/* Animated shimmer effect on hover - plays once */}
+        {/* Smooth Wave Background instead of radial gradients */}
         <div 
-          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none group-hover:animate-[shimmer_0.6s_ease-out_forwards]"
-          style={{
-            background: `linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%)`,
-            backgroundSize: '200% 100%',
-            backgroundPosition: '-200% 0'
-          }}
+          className="absolute inset-0 opacity-20 transition-all duration-700 group-hover:opacity-30 mix-blend-multiply dark:mix-blend-screen" 
+          style={{ 
+             backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 900'%3E%3Cdefs%3E%3ClinearGradient id='a' x1='0' x2='0' y1='1' y2='0' gradientTransform='rotate(0,0.5,0.5)'%3E%3Cstop offset='0' stop-color='%23808080'/%3E%3Cstop offset='1' stop-color='%23FFFFFF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg fill='%23FFF' fill-opacity='1' stroke-miterlimit='10'%3E%3Cg stroke='url(%23a)' stroke-width='3.57'%3E%3Cpath d='M-363.5 358.5c106.8-.7 213.6-1.5 328.9-8.7 115.3-7.2 239-20.9 337.5-12.8 98.5 8.1 171.9 38.3 260.6 57 88.7 18.7 192.6 26 288.4 18.2 95.8-7.8 183.5-30.7 271.3-53.5'/%3E%3Cpath d='M-363.5 373.5c106.8-.7 213.6-1.5 328.9-8.7 115.3-7.2 239-20.9 337.5-12.8 98.5 8.1 171.9 38.3 260.6 57 88.7 18.7 192.6 26 288.4 18.2 95.8-7.8 183.5-30.7 271.3-53.5'/%3E%3Cpath d='M-363.5 388.5c106.8-.7 213.6-1.5 328.9-8.7 115.3-7.2 239-20.9 337.5-12.8 98.5 8.1 171.9 38.3 260.6 57 88.7 18.7 192.6 26 288.4 18.2 95.8-7.8 183.5-30.7 271.3-53.5'/%3E%3Cpath d='M-363.5 403.5c106.8-.7 213.6-1.5 328.9-8.7 115.3-7.2 239-20.9 337.5-12.8 98.5 8.1 171.9 38.3 260.6 57 88.7 18.7 192.6 26 288.4 18.2 95.8-7.8 183.5-30.7 271.3-53.5'/%3E%3Cpath d='M-363.5 418.5c106.8-.7 213.6-1.5 328.9-8.7 115.3-7.2 239-20.9 337.5-12.8 98.5 8.1 171.9 38.3 260.6 57 88.7 18.7 192.6 26 288.4 18.2 95.8-7.8 183.5-30.7 271.3-53.5'/%3E%3Cpath d='M-363.5 433.5c106.8-.7 213.6-1.5 328.9-8.7 115.3-7.2 239-20.9 337.5-12.8 98.5 8.1 171.9 38.3 260.6 57 88.7 18.7 192.6 26 288.4 18.2 95.8-7.8 183.5-30.7 271.3-53.5'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+             backgroundSize: 'cover',
+          }} 
         />
         <style>{`
           @keyframes shimmer {
@@ -137,8 +139,9 @@ const HeroBanner: React.FC<{
           <div className={`inline-block px-2 sm:px-3 py-0.5 sm:py-1 bg-t-secondary ${fgOnColor} text-[8px] sm:text-[10px] font-bold uppercase tracking-[0.15em] sm:tracking-[0.2em] shadow-lg rounded-full mb-1 sm:mb-2`}>
             Premium Experience
           </div>
-          <h2 className="text-2xl sm:text-3xl md:text-5xl lg:text-7xl font-black text-t-text leading-[1.05] tracking-tight drop-shadow-xl transition-all duration-500 group-hover:scale-[1.01]">
-            Design your <span className="text-t-primary font-serif italic">vision</span> in <span className="text-t-secondary font-serif italic">color</span>.
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-black text-t-text leading-[1.05] tracking-tight drop-shadow-xl transition-all duration-500 group-hover:scale-[1.01] mb-6">
+            Design your <span className="text-t-secondary font-serif italic">vision</span> <br className="hidden sm:block"/>
+            in <span className="text-t-primary font-serif italic underline decoration-4 decoration-t-accent/30">color</span>.
           </h2>
           <p className="text-t-text font-medium text-xs sm:text-sm md:text-lg max-w-lg mx-auto leading-relaxed drop-shadow-md">
             Elevate your interface with harmonious palettes and perfectly balanced typography.
@@ -296,31 +299,13 @@ const PreviewSection: React.FC<PreviewProps> = ({ themeName, options }) => {
 
       <hr className={options.borderWidth > 0 ? 'border-t-text/20' : 'border-transparent'} />
 
-      <section className="space-y-6">
-       <h3 className="text-sm font-bold uppercase tracking-wider text-t-textMuted">Display Section</h3>
-       <div className={`relative w-full ${options.borderWidth > 0 ? '' : 'min-h-[400px]'} aspect-auto md:aspect-[16/9] ${rClass} ${sClass} bg-t-card ${bClass} overflow-hidden group transition-all duration-500 hover:shadow-2xl`}>
-          {/* Background Gradient/Image Sizzle */}
-          <div className={`absolute inset-0 bg-t-primary/5 group-hover:bg-t-primary/10 transition-colors duration-500`}></div>
-          <div className={`absolute -right-20 -top-20 w-96 h-96 bg-t-secondary/20 rounded-full blur-3xl group-hover:bg-t-secondary/30 transition-all duration-700`}></div>
-          <div className={`absolute -left-20 -bottom-20 w-96 h-96 bg-t-accent/20 rounded-full blur-3xl group-hover:bg-t-accent/30 transition-all duration-700`}></div>
-          
-          {/* Pattern Overlay */}
-          <div className="absolute inset-0 opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
-
-          <div className="absolute inset-0 flex flex-col justify-center items-center text-center p-8 md:p-12 z-10 transition-transform duration-500 group-hover:scale-[1.02]">
-             <span className={`inline-block px-3 py-1 mb-6 text-xs font-bold tracking-widest uppercase bg-t-secondary text-t-textOnColor ${rPill} shadow-lg`}>
-               Premium Experience
-             </span>
-             <h2 className="text-4xl md:text-5xl md:leading-tight font-black text-t-text mb-6 max-w-lg mx-auto drop-shadow-sm">
-               Design your <span className="text-t-primary italic">vision</span> <br className="hidden sm:block"/>
-               in <span className="text-t-secondary underline decoration-4 decoration-t-accent/30">color</span>.
-             </h2>
-             <p className="text-t-textMuted text-lg max-w-md mx-auto font-medium leading-relaxed">
-               Elevate your interface with harmonious palettes and perfectly balanced typography.
-             </p>
-          </div>
-       </div>
-    </section>
+       <HeroBanner 
+         rClass={rClass} 
+         sClass={sClass} 
+         sClassHover={sClassHover}
+         themeName={themeName}
+         bClass={bClass}
+       />
       
       {/* Buttons & Actions - Shows: primary, secondary, accent, error, surface, text */}
       <section className="space-y-6">
