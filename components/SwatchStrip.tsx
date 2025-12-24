@@ -55,12 +55,23 @@ const CompactSwatch: React.FC<CompactSwatchProps> = ({
 }) => {
   const [copied, setCopied] = useState<'light' | 'dark' | null>(null);
 
-  const copyToClipboard = (hex: string, side: 'light' | 'dark', e: React.MouseEvent) => {
-    e.stopPropagation();
-    const val = formatColor(hex, format);
-    navigator.clipboard.writeText(val);
-    setCopied(side);
-    setTimeout(() => setCopied(null), 1500);
+  const handleClick = (hex: string, side: 'light' | 'dark', e: React.MouseEvent) => {
+    // Alt/Option + Click to Copy
+    if (e.altKey || e.metaKey) {
+      e.stopPropagation();
+      const val = formatColor(hex, format);
+      navigator.clipboard.writeText(val);
+      setCopied(side);
+      setTimeout(() => setCopied(null), 1500);
+      return;
+    }
+    
+    // Normal Click: Color Picker handled by hidden input
+    // The input click will propagate and open the picker
+  };
+
+  const handleColorChange = (e: React.ChangeEvent<HTMLInputElement>, side: 'light' | 'dark') => {
+    onUpdate(side, tokenKey as keyof ThemeTokens, e.target.value);
   };
 
   const lightContrast = getContrastColor(lightHex);
@@ -85,42 +96,60 @@ const CompactSwatch: React.FC<CompactSwatchProps> = ({
       {/* Color swatches side by side */}
       <div className="flex flex-1">
         {/* Light swatch */}
-        <button
-          onClick={(e) => copyToClipboard(lightHex, 'light', e)}
+        <div
           className="flex-1 h-12 relative flex items-center justify-center cursor-pointer hover:brightness-110 transition-all"
           style={{ backgroundColor: lightHex }}
-          title={`Light: ${formatColor(lightHex, format)}\nClick to copy`}
+          title={`Light: ${formatColor(lightHex, format)}\nClick to edit, Alt+Click to copy`}
+          onClick={(e) => handleClick(lightHex, 'light', e)}
         >
+          <input 
+            type="color" 
+            value={lightHex} 
+            onChange={(e) => handleColorChange(e, 'light')}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            onClick={(e) => {
+              if (e.altKey || e.metaKey) e.preventDefault(); // Prevent picker on copy
+            }}
+          />
           {copied === 'light' ? (
             <Check size={14} style={{ color: lightContrast }} strokeWidth={3} />
           ) : (
             <span 
-              className="text-[8px] font-mono font-medium opacity-80 group-hover/token:opacity-100 truncate px-1"
+              className="text-[8px] font-mono font-medium opacity-80 group-hover/token:opacity-100 truncate px-1 pointer-events-none"
               style={{ color: lightContrast }}
             >
               {lightShort}
             </span>
           )}
-        </button>
+        </div>
         
         {/* Dark swatch */}
-        <button
-          onClick={(e) => copyToClipboard(darkHex, 'dark', e)}
+        <div
           className="flex-1 h-12 relative flex items-center justify-center cursor-pointer hover:brightness-110 transition-all"
           style={{ backgroundColor: darkHex }}
-          title={`Dark: ${formatColor(darkHex, format)}\nClick to copy`}
+          title={`Dark: ${formatColor(darkHex, format)}\nClick to edit, Alt+Click to copy`}
+          onClick={(e) => handleClick(darkHex, 'dark', e)}
         >
+          <input 
+            type="color" 
+            value={darkHex} 
+            onChange={(e) => handleColorChange(e, 'dark')}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            onClick={(e) => {
+              if (e.altKey || e.metaKey) e.preventDefault(); // Prevent picker on copy
+            }}
+          />
           {copied === 'dark' ? (
             <Check size={14} style={{ color: darkContrast }} strokeWidth={3} />
           ) : (
             <span 
-              className="text-[8px] font-mono font-medium opacity-80 group-hover/token:opacity-100 truncate px-1"
+              className="text-[8px] font-mono font-medium opacity-80 group-hover/token:opacity-100 truncate px-1 pointer-events-none"
               style={{ color: darkContrast }}
             >
               {darkShort}
             </span>
           )}
-        </button>
+        </div>
       </div>
     </div>
   );
