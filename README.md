@@ -12,7 +12,7 @@
 </div>
 
 <div align="center">
-  <img src="public/taichi-preview.png" alt="Taichi Theme Generator Preview" width="100%" />
+  <img src="public/readme-screenshot.png" alt="Taichi Theme Generator Preview" width="100%" />
 </div>
 
 ## Features
