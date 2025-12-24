@@ -103,8 +103,7 @@ const HeroBanner: React.FC<{
         {/* Dynamic Theme Overlay - Fixed to card background */}
         <div className={`absolute inset-0 ${themeName === 'Dark' ? 'bg-black/80' : 'bg-white/80'} backdrop-blur-[1px] transition-colors duration-500`} />
         
-        {/* Soft gradient overlay for flavor */}
-        <div className={`absolute inset-0 bg-gradient-to-tr from-t-bg/50 to-transparent mix-blend-overlay`} />
+
         
         {/* Animated shimmer effect on hover - plays once */}
         {/* Smooth Wave Background instead of radial gradients */}
