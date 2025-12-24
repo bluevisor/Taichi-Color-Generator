@@ -1,5 +1,38 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { rateLimit, getRateLimitStatus } from './utils/rate-limit';
+
+// Inline rate limiting
+const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
+function getClientIP(req: VercelRequest): string {
+  const forwarded = req.headers['x-forwarded-for'];
+  if (forwarded) {
+    const ip = Array.isArray(forwarded) ? forwarded[0] : forwarded.split(',')[0];
+    return ip.trim();
+  }
+  return 'unknown';
+}
+async function rateLimit(req: VercelRequest, max: number, windowMs: number) {
+  const ip = getClientIP(req);
+  const now = Date.now();
+  let entry = rateLimitStore.get(ip);
+  if (!entry || now > entry.resetTime) {
+    rateLimitStore.set(ip, { count: 1, resetTime: now + windowMs });
+    return { success: true };
+  }
+  if (entry.count < max) {
+    entry.count++;
+    return { success: true };
+  }
+  return { success: false, retryAfter: Math.ceil((entry.resetTime - now) / 1000) };
+}
+function getRateLimitStatus(req: VercelRequest, max: number) {
+  const ip = getClientIP(req);
+  const entry = rateLimitStore.get(ip);
+  const now = Date.now();
+  if (!entry || now > entry.resetTime) {
+    return { remaining: max, resetTime: now + 60000, total: max };
+  }
+  return { remaining: Math.max(0, max - entry.count), resetTime: entry.resetTime, total: max };
+}
 
 /**
  * API Endpoint: Get Theme History
