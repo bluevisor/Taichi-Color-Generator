@@ -173,6 +173,22 @@ const App: React.FC = () => {
     localStorage.setItem('theme_history', JSON.stringify(history));
   }, [history]);
 
+  // Regenerate theme when color-affecting sliders change
+  // This is a separate ref to track if this is the initial mount
+  const hasInitializedRef = useRef(false);
+  useEffect(() => {
+    // Skip effect on initial mount (handled by initialization useEffect)
+    if (!hasInitializedRef.current) {
+      hasInitializedRef.current = true;
+      return;
+    }
+    // Only regenerate if we have a current theme
+    if (currentTheme) {
+      generateNewTheme(currentTheme.mode, currentTheme.seed);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [designOptions.saturationLevel, designOptions.contrastLevel, designOptions.brightnessLevel]);
+
   // Listen for system theme changes
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
