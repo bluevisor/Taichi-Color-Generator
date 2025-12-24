@@ -87,12 +87,13 @@ const App: React.FC = () => {
   
   const [designOptions, setDesignOptions] = useState<DesignOptions>({
     borderWidth: 1,
-    shadowStrength: 2,
+    shadowStrength: 3,
+    shadowOpacity: 50,
     gradientLevel: 0,
     radius: 3,
     brightnessLevel: 3, // Default to Middle (scale 1-5)
     contrastLevel: 3, // Default to Middle (scale 1-5)
-    saturationLevel: 2 // Default to Middle (scale 0-4)
+    saturationLevel: 2 // Default to Middle (scale 0-5)
   });
   
   const [lockedColors, setLockedColors] = useState<LockedColors>({});
@@ -112,6 +113,7 @@ const App: React.FC = () => {
       const bri = params.get('bri') ? parseInt(params.get('bri')!) : undefined;
       const bw = params.get('bw') ? parseInt(params.get('bw')!) : undefined;
       const sh = params.get('sh') ? parseInt(params.get('sh')!) : undefined;
+      const so = params.get('so') ? parseInt(params.get('so')!) : undefined;
       const gr = params.get('gr') ? parseInt(params.get('gr')!) : undefined;
       const rd = params.get('rd') ? parseInt(params.get('rd')!) : undefined;
 
@@ -120,6 +122,7 @@ const App: React.FC = () => {
         ...prev,
         borderWidth: bw ?? prev.borderWidth,
         shadowStrength: sh ?? prev.shadowStrength,
+        shadowOpacity: so ?? prev.shadowOpacity,
         gradientLevel: gr ?? prev.gradientLevel,
         radius: rd ?? prev.radius,
         brightnessLevel: bri ?? prev.brightnessLevel,
@@ -161,6 +164,7 @@ const App: React.FC = () => {
     params.set('bri', designOptions.brightnessLevel.toString());
     params.set('bw', designOptions.borderWidth.toString());
     params.set('sh', designOptions.shadowStrength.toString());
+    params.set('so', designOptions.shadowOpacity.toString());
     params.set('gr', designOptions.gradientLevel.toString());
     params.set('rd', designOptions.radius.toString());
     
@@ -510,6 +514,9 @@ const App: React.FC = () => {
                 <option value="complementary">Complementary</option>
                 <option value="split-complementary">Split</option>
                 <option value="triadic">Triadic</option>
+                <option value="tetradic">Tetradic</option>
+                <option value="compound">Compound</option>
+                <option value="triadic-split">Triadic Split</option>
               </select>
 
               <select 
@@ -625,6 +632,9 @@ const App: React.FC = () => {
                 <option value="complementary">Complementary</option>
                 <option value="split-complementary">Split Complementary</option>
                 <option value="triadic">Triadic</option>
+                <option value="tetradic">Tetradic</option>
+                <option value="compound">Compound</option>
+                <option value="triadic-split">Triadic Split</option>
               </select>
             </div>
 
@@ -743,20 +753,19 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {/* --- View Options Panel (Sliders) --- */}
       {showOptions && (
         <div 
-          className="border-b px-4 py-4 shrink-0 shadow-inner z-40 relative grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-x-4 gap-y-4 transition-colors duration-500"
+          className="border-b px-4 py-4 shrink-0 shadow-inner z-40 relative grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-x-4 gap-y-4 transition-colors duration-500"
           style={{ backgroundColor: shellTheme.bg, borderColor: shellTheme.border }}
         >
            {/* Border Width */}
            <div className="space-y-3">
              <div className="flex justify-between items-center">
                <label className="text-xs font-bold uppercase tracking-wider opacity-70">Border</label>
-               <span className="text-xs font-mono opacity-50">{[0, 1, 2, 4][designOptions.borderWidth]}px</span>
+               <span className="text-xs font-mono opacity-50">{designOptions.borderWidth}px</span>
              </div>
              <input 
-               type="range" min="0" max="3" step="1"
+               type="range" min="0" max="5" step="1"
                value={designOptions.borderWidth}
                onChange={(e) => updateOption('borderWidth', parseInt(e.target.value))}
                className="w-full h-1.5 bg-current opacity-20 rounded-lg appearance-none cursor-pointer accent-current"
@@ -767,10 +776,10 @@ const App: React.FC = () => {
              </div>
            </div>
 
-           {/* Shadow Strength */}
+           {/* Shadow Strength (Size) */}
            <div className="space-y-3">
              <div className="flex justify-between items-center">
-               <label className="text-xs font-bold uppercase tracking-wider opacity-70">Shadows</label>
+               <label className="text-xs font-bold uppercase tracking-wider opacity-70">Shadow Size</label>
                <span className="text-xs font-mono opacity-50">Lvl {designOptions.shadowStrength}</span>
              </div>
              <input 
@@ -782,6 +791,24 @@ const App: React.FC = () => {
              />
              <div className="flex justify-between text-[10px] opacity-40 px-0.5">
                <span>Flat</span><span>Float</span>
+             </div>
+           </div>
+
+           {/* Shadow Opacity */}
+           <div className="space-y-3">
+             <div className="flex justify-between items-center">
+               <label className="text-xs font-bold uppercase tracking-wider opacity-70">Opacity</label>
+               <span className="text-xs font-mono opacity-50">{designOptions.shadowOpacity}%</span>
+             </div>
+             <input 
+               type="range" min="0" max="100" step="5"
+               value={designOptions.shadowOpacity}
+               onChange={(e) => updateOption('shadowOpacity', parseInt(e.target.value))}
+               className="w-full h-1.5 bg-current opacity-20 rounded-lg appearance-none cursor-pointer accent-current"
+               style={{ accentColor: shellTheme.primary }}
+             />
+             <div className="flex justify-between text-[10px] opacity-40 px-0.5">
+               <span>0%</span><span>100%</span>
              </div>
            </div>
 
@@ -810,14 +837,14 @@ const App: React.FC = () => {
                <span className="text-xs font-mono opacity-50">Lvl {designOptions.gradientLevel}</span>
              </div>
              <input 
-               type="range" min="0" max="2" step="1"
+               type="range" min="0" max="5" step="1"
                value={designOptions.gradientLevel}
                onChange={(e) => updateOption('gradientLevel', parseInt(e.target.value))}
                className="w-full h-1.5 bg-current opacity-20 rounded-lg appearance-none cursor-pointer accent-current"
                style={{ accentColor: shellTheme.primary }}
              />
              <div className="flex justify-between text-[10px] opacity-40 px-0.5">
-               <span>Solid</span><span>Vivid</span>
+               <span>None</span><span>Diag</span>
              </div>
            </div>
 
@@ -828,7 +855,7 @@ const App: React.FC = () => {
                <span className="text-xs font-mono opacity-50">Lvl {designOptions.saturationLevel}</span>
              </div>
              <input 
-               type="range" min="0" max="4" step="1"
+               type="range" min="0" max="5" step="1"
                value={designOptions.saturationLevel}
                onChange={(e) => updateOption('saturationLevel', parseInt(e.target.value))}
                className="w-full h-1.5 bg-current opacity-20 rounded-lg appearance-none cursor-pointer accent-current"
@@ -859,20 +886,20 @@ const App: React.FC = () => {
 
            {/* Contrast Level */}
            <div className="space-y-3">
-             <div className="flex justify-between items-center">
-               <label className="text-xs font-bold uppercase tracking-wider opacity-70">Contrast</label>
-               <span className="text-xs font-mono opacity-50">Lvl {designOptions.contrastLevel}</span>
-             </div>
-             <input 
-               type="range" min="1" max="5" step="1"
-               value={designOptions.contrastLevel}
-               onChange={(e) => updateOption('contrastLevel', parseInt(e.target.value))}
-               className="w-full h-1.5 bg-current opacity-20 rounded-lg appearance-none cursor-pointer accent-current"
-               style={{ accentColor: shellTheme.primary }}
-             />
-             <div className="flex justify-between text-[10px] opacity-40 px-0.5">
-               <span>Soft</span><span>Max</span>
-             </div>
+              <div className="flex justify-between items-center">
+                <label className="text-xs font-bold uppercase tracking-wider opacity-70">Contrast</label>
+                <span className="text-xs font-mono opacity-50">Lvl {designOptions.contrastLevel}</span>
+              </div>
+              <input 
+                type="range" min="1" max="5" step="1"
+                value={designOptions.contrastLevel}
+                onChange={(e) => updateOption('contrastLevel', parseInt(e.target.value))}
+                className="w-full h-1.5 bg-current opacity-20 rounded-lg appearance-none cursor-pointer accent-current"
+                style={{ accentColor: shellTheme.primary }}
+              />
+              <div className="flex justify-between text-[10px] opacity-40 px-0.5">
+                <span>Soft</span><span>Max</span>
+              </div>
            </div>
         </div>
       )}
@@ -902,7 +929,7 @@ const App: React.FC = () => {
               </div>
               <div 
                 className="h-6 text-[10px] flex items-center justify-center font-mono"
-                style={{ backgroundColor: shellTheme.surface2, color: shellTheme.textMuted }}
+                style={{ backgroundColor: shellTheme.card2, color: shellTheme.textMuted }}
               >
                 {theme.mode === 'random' ? 'Rndm' : 
                  theme.mode === 'monochrome' ? 'Mono' :
@@ -910,6 +937,9 @@ const App: React.FC = () => {
                  theme.mode === 'complementary' ? 'Comp' :
                  theme.mode === 'split-complementary' ? 'Splt' :
                  theme.mode === 'triadic' ? 'Tria' :
+                 theme.mode === 'tetradic' ? 'Tetr' :
+                 theme.mode === 'compound' ? 'Cmpd' :
+                 theme.mode === 'triadic-split' ? 'TrSp' :
                  theme.mode === 'image' ? 'Img' : theme.mode.slice(0,4)}
               </div>
             </button>

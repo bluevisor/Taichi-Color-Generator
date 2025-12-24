@@ -397,7 +397,7 @@ Features:
 | `Space`        | Generate new theme          |
 | `←` / `→`      | Navigate theme history      |
 | `Cmd/Ctrl + Z` | Undo (go to previous theme) |
-| Cmd/Ctrl + C`  | Copy theme URL              |
+| `Cmd/Ctrl + C` | Copy theme URL              |
 
 ---
 
@@ -412,7 +412,7 @@ The application state is encoded in URL parameters for sharing:
 | `sat`  | Saturation level (0-4)                     |
 | `con`  | Contrast level (1-5)                       |
 | `bri`  | Brightness level (1-5)                     |
-| `bw`   | Border width (0-3)                         |
+| `bw`   | Border width (0-5)                         |
 | `sh`   | Shadow strength (0-5)                      |
 | `gr`   | Gradient level (0-2)                       |
 | `rd`   | Radius level (0-5)                         |

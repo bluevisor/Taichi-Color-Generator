@@ -36,18 +36,19 @@ export interface DualTheme {
   mode: GenerationMode;
 }
 
-export type GenerationMode = 'random' | 'monochrome' | 'analogous' | 'complementary' | 'split-complementary' | 'triadic' | 'image';
+export type GenerationMode = 'random' | 'monochrome' | 'analogous' | 'complementary' | 'split-complementary' | 'triadic' | 'tetradic' | 'compound' | 'triadic-split' | 'image';
 
 export type ColorFormat = 'hex' | 'rgb' | 'cmyk' | 'hsl' | 'lab' | 'lch' | 'oklch' | 'display-p3';
 
 export interface DesignOptions {
-  borderWidth: number;   // 0 - 3
-  shadowStrength: number; // 0 - 4
-  gradientLevel: number; // 0 - 2
+  borderWidth: number;   // 0 - 5
+  shadowStrength: number; // 0 - 5 (Size)
+  shadowOpacity: number; // 0 - 100 (%)
+  gradientLevel: number; // 0 - 5
   radius: number;        // 0 - 5
   brightnessLevel: number; // 1 - 5, compresses colors toward bright(5) or dark(1), 3 is normal
   contrastLevel: number; // 1 - 5
-  saturationLevel: number; // 0 - 4
+  saturationLevel: number; // 0 - 5
 }
 
 export type LockedColors = Partial<Record<keyof ThemeTokens, boolean>>;

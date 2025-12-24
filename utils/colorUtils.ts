@@ -359,10 +359,12 @@ function getHarmonyHues(baseHue: number, mode: GenerationMode): number[] {
   switch (mode) {
     case 'monochrome': return [baseHue, baseHue, baseHue];
     case 'analogous': return [baseHue, (baseHue + 30) % 360, (baseHue - 30 + 360) % 360];
-    case 'complementary': return [baseHue, (baseHue + 180) % 360, baseHue]; // 3rd can be base
+    case 'complementary': return [baseHue, (baseHue + 180) % 360, baseHue]; 
     case 'split-complementary': return [baseHue, (baseHue + 150) % 360, (baseHue + 210) % 360];
     case 'triadic': return [baseHue, (baseHue + 120) % 360, (baseHue + 240) % 360];
-    // random: [h1, h2, h3] handled in generateTheme
+    case 'tetradic': return [baseHue, (baseHue + 90) % 360, (baseHue + 180) % 360];
+    case 'compound': return [baseHue, (baseHue + 180) % 360, (baseHue + 30) % 360];
+    case 'triadic-split': return [baseHue, (baseHue + 120) % 360, (baseHue + 150) % 360];
     default: return [baseHue, (baseHue + 180) % 360, (baseHue + 90) % 360];
   }
 }
@@ -402,11 +404,12 @@ export function generateTheme(
     if (mode === 'random') {
         switch(saturationLevel) {
             case 0: baseSat = 0; break; // Pure grayscale
-            case 1: baseSat = Math.floor(satRandom * 10) + 15; break; // Low saturation
-            case 2: baseSat = Math.floor(satRandom * 10) + 40; break; // Medium
-            case 3: baseSat = Math.floor(satRandom * 10) + 65; break; // High
-            case 4: baseSat = Math.floor(satRandom * 10) + 90; break; // Maximum
-            default: baseSat = Math.floor(satRandom * 10) + 40;
+            case 1: baseSat = Math.floor(satRandom * 10) + 15; break; // Low
+            case 2: baseSat = Math.floor(satRandom * 10) + 30; break; // Low-Medium
+            case 3: baseSat = Math.floor(satRandom * 10) + 50; break; // High-Medium
+            case 4: baseSat = Math.floor(satRandom * 10) + 70; break; // High
+            case 5: baseSat = Math.floor(satRandom * 10) + 90; break; // Maximum
+            default: baseSat = Math.floor(satRandom * 10) + 50;
         }
     }
   }
@@ -424,10 +427,10 @@ export function generateTheme(
 
   // Adjust Primary Saturation based on level (Clamping)
   // Ensure the primary color follows the slider intent strongly
-  // Equal spacing: 0, 15-25, 40-50, 65-75, 90-100
+  // Equal spacing: 0, 15-25, 30-40, 50-60, 70-80, 90-100
   let primarySat = baseSat;
-  const sMin = [0, 15, 40, 65, 90][saturationLevel];
-  const sMax = [0, 25, 50, 75, 100][saturationLevel];
+  const sMin = [0, 15, 30, 50, 70, 90][saturationLevel];
+  const sMax = [0, 25, 45, 65, 85, 100][saturationLevel];
   primarySat = clamp(baseSat, sMin, sMax);
 
   let secondarySat = mode === 'monochrome' ? clamp(baseSat - 30, 0, sMax - 20) : clamp(baseSat - 10, sMin, sMax);
