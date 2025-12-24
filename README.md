@@ -31,6 +31,11 @@
 - **Live Preview** - See your theme applied to real UI components instantly
 - **Export & Import** - Save themes as JSON files with your preferred color
   format
+- **API Endpoints** - Programmatic access to theme generation and export
+  - Generate themes via REST API
+  - Export themes in multiple formats (CSS, SCSS, Tailwind, etc.)
+  - Rate-limited for Vercel free tier
+  - LLM-friendly with comprehensive documentation
 
 ## Live Demo
 
@@ -128,6 +133,41 @@ The generator creates comprehensive design tokens:
 - **Semantic**: `success`, `warn`, `error`
 - **UI**: `border`, `ring`
 - **Foregrounds**: `primaryFg`, `secondaryFg`, etc.
+
+## API Documentation
+
+The Taichi Color Generator provides REST API endpoints for programmatic theme
+generation and export.
+
+### Quick Start
+
+```javascript
+// Generate a Yin-Yang style theme
+const response = await fetch("/api/generate-theme", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    style: "yin-yang",
+    baseColor: "#3B82F6",
+  }),
+});
+const { theme, metadata } = await response.json();
+```
+
+### Available Endpoints
+
+- **POST /api/generate-theme** - Generate Taichi-inspired themes (10 req/min)
+- **POST /api/export-theme** - Export themes in multiple formats (15 req/min)
+- **GET /api/theme-history** - Retrieve theme history (20 req/min)
+
+### Documentation
+
+- 📖 [Complete API Documentation](./API_DOCUMENTATION.md)
+- ⚡ [Quick Reference](./API_QUICK_REFERENCE.md)
+- 💻 [API Client Utilities](./utils/api-client.ts)
+
+All endpoints are rate-limited for Vercel's free tier and designed to be
+LLM-friendly.
 
 ## Contributing
 
