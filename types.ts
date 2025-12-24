@@ -6,8 +6,8 @@ export interface ColorToken {
 
 export interface ThemeTokens {
   bg: string;
-  surface: string;
-  surface2: string;
+  card: string;
+  card2: string;
   text: string;
   textMuted: string;
   textOnColor: string;  // Text color for use on colored backgrounds (primary, secondary, etc.)
@@ -19,12 +19,12 @@ export interface ThemeTokens {
   accentFg: string;
   border: string;
   ring: string;
-  success: string;
-  successFg: string;
+  good: string;
+  goodFg: string;
   warn: string;
   warnFg: string;
-  error: string;
-  errorFg: string;
+  bad: string;
+  badFg: string;
 }
 
 export interface DualTheme {

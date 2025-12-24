@@ -39,7 +39,7 @@ async function rateLimit(req: VercelRequest, max: number, windowMs: number) {
  *     "secondary": string,
  *     "accent": string,
  *     "background": string,
- *     "surface": string,
+ *     "card": string,
  *     "text": string,
  *     "textSecondary": string,
  *     "border": string

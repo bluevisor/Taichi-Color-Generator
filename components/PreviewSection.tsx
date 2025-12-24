@@ -29,8 +29,8 @@ const NavTabsDemo: React.FC<{
   const fgOnColor = getTextOnColor();
   
   return (
-    <div className={`${bClass} ${rClass} ${sClass} overflow-hidden bg-t-surface`}>
-      <div className={`${bBottom} p-4 flex items-center justify-between gap-4`} style={{ backgroundColor: 'color-mix(in srgb, var(--surface) 90%, var(--text) 10%)' }}>
+    <div className={`${bClass} ${rClass} ${sClass} overflow-hidden bg-t-card`}>
+      <div className={`${bBottom} p-4 flex items-center justify-between gap-4`} style={{ backgroundColor: 'color-mix(in srgb, var(--card) 90%, var(--text) 10%)' }}>
         <div className="flex gap-3 sm:gap-4 text-sm font-medium text-t-textMuted flex-wrap">
           {tabs.map(tab => (
             <span
@@ -221,8 +221,8 @@ const PreviewSection: React.FC<PreviewProps> = ({ themeName, options }) => {
   let primaryBg = `bg-t-primary ${fgOnColor}`;
   let secondaryBg = `bg-t-secondary ${fgOnColor}`;
   let accentBg = `bg-t-accent ${fgOnColor}`;
-  let successBg = `bg-t-success ${fgOnColor}`;
-  let errorBg = `bg-t-error ${fgOnColor}`;
+  let goodBg = `bg-t-good ${fgOnColor}`;
+  let badBg = `bg-t-bad ${fgOnColor}`;
   let textGradient = `text-t-primary`;
   
   if (isGradient) {
@@ -302,21 +302,21 @@ const PreviewSection: React.FC<PreviewProps> = ({ themeName, options }) => {
           </button>
 
           {/* Outline Button */}
-          <button className={`${bClass} text-t-text bg-t-surface px-5 py-2.5 ${rPill} font-semibold ${sClass} transition-all duration-200 
+          <button className={`${bClass} text-t-text bg-t-card px-5 py-2.5 ${rPill} font-semibold ${sClass} transition-all duration-200 
             hover:border-t-primary hover:text-t-primary hover:bg-t-bg hover:${sClassHover}
             active:scale-95 active:bg-t-primary/5 focus:ring-4 focus:ring-t-primary/30`}>
             Outline
           </button>
 
           {/* Destructive Button */}
-          <button className={`${errorBg} px-5 py-2.5 ${rPill} font-semibold ${sClass} ${bAction} transition-all duration-200 
+          <button className={`${badBg} px-5 py-2.5 ${rPill} font-semibold ${sClass} ${bAction} transition-all duration-200 
             hover:shadow-md hover:brightness-110 hover:${sClassHover}
             active:scale-95 active:brightness-90`}>
             Error
           </button>
 
           {/* Success Button */}
-          <button className={`${successBg} px-5 py-2.5 ${rPill} font-semibold ${sClass} ${bAction} transition-all duration-200 
+          <button className={`${goodBg} px-5 py-2.5 ${rPill} font-semibold ${sClass} ${bAction} transition-all duration-200 
             hover:shadow-md hover:brightness-110 hover:${sClassHover}
             active:scale-95 active:brightness-90`}>
             Success
@@ -348,7 +348,7 @@ const PreviewSection: React.FC<PreviewProps> = ({ themeName, options }) => {
               <input 
                 type="text" 
                 placeholder="you@example.com"
-                className={`w-full bg-t-surface ${bClass} ${rPill} ${sClass} pl-10 pr-4 py-2.5 text-t-text placeholder:text-t-textMuted transition-all duration-200
+                className={`w-full bg-t-card ${bClass} ${rPill} ${sClass} pl-10 pr-4 py-2.5 text-t-text placeholder:text-t-textMuted transition-all duration-200
                 hover:border-t-primary/50
                 focus:outline-none focus:border-t-primary focus:ring-2 focus:ring-t-primary/20`}
               />
@@ -359,7 +359,7 @@ const PreviewSection: React.FC<PreviewProps> = ({ themeName, options }) => {
           <div className="flex gap-6">
             <div className="space-y-2 flex-1">
               <label className="text-sm font-medium text-t-text">Select Option</label>
-              <select className={`w-full bg-t-surface ${bClass} ${rPill} ${sClass} px-4 py-2.5 text-t-text transition-all duration-200
+              <select className={`w-full bg-t-card ${bClass} ${rPill} ${sClass} px-4 py-2.5 text-t-text transition-all duration-200
                 hover:border-t-primary/50
                 focus:outline-none focus:border-t-primary focus:ring-2 focus:ring-t-primary/20`}>
                 <option>Version 1.0</option>
@@ -396,13 +396,13 @@ const PreviewSection: React.FC<PreviewProps> = ({ themeName, options }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           
           {/* Card 1 - Revenue Card */}
-          <div className={`bg-t-surface ${bClass} ${rClass} p-6 ${sClass} transition-all duration-300 relative overflow-hidden group hover:${sClassHover} hover:-translate-y-1 ${options.borderWidth > 0 ? 'hover:border-t-primary/30' : ''}`}>
+          <div className={`bg-t-card ${bClass} ${rClass} p-6 ${sClass} transition-all duration-300 relative overflow-hidden group hover:${sClassHover} hover:-translate-y-1 ${options.borderWidth > 0 ? 'hover:border-t-primary/30' : ''}`}>
              <div className={`absolute top-0 left-0 w-full h-1 ${primaryBg} group-hover:h-1.5 transition-all`}></div>
              <div className="flex justify-between items-start mb-4">
                <div className={`p-2 bg-t-secondary/15 ${rClassInner} text-t-secondary group-hover:bg-t-secondary group-hover:${fgOnColor} transition-colors`}>
                  <BarChart2 size={24} />
                </div>
-               <span className={`text-xs font-bold text-t-success bg-t-success/15 px-2 py-1 ${rClassInner} border border-t-success/30`}>+24.5%</span>
+               <span className={`text-xs font-bold text-t-good bg-t-good/15 px-2 py-1 ${rClassInner} border border-t-good/30`}>+24.5%</span>
              </div>
              <h4 className="text-lg font-bold text-t-text mb-1">Weekly Revenue</h4>
              <p className="text-3xl font-mono font-bold text-t-text mb-4">$45,231.89</p>
@@ -412,7 +412,7 @@ const PreviewSection: React.FC<PreviewProps> = ({ themeName, options }) => {
           </div>
 
           {/* Card 2 - Profile Card */}
-          <div className={`bg-t-surface ${bClass} ${rClass} p-6 ${sClass} flex flex-col items-center text-center transition-all duration-300 hover:${sClassHover} hover:-translate-y-1`}>
+          <div className={`bg-t-card ${bClass} ${rClass} p-6 ${sClass} flex flex-col items-center text-center transition-all duration-300 hover:${sClassHover} hover:-translate-y-1`}>
              <div className={`w-16 h-16 ${rFull} bg-t-accent/15 mb-4 flex items-center justify-center text-t-accent transition-transform duration-300 hover:scale-110 hover:bg-t-accent hover:${fgOnColor}`}>
                 <User size={32} />
              </div>
@@ -439,12 +439,12 @@ const PreviewSection: React.FC<PreviewProps> = ({ themeName, options }) => {
                <Info className="text-t-secondary shrink-0" size={20} />
                <div className="flex-1 text-sm"><span className="font-bold">Update Available:</span> A new version of the system is ready.</div>
             </div>
-            <div className={`flex items-center gap-3 p-4 ${rPill} ${sClass} bg-t-error/10 border border-t-error/30 text-t-text transition-transform hover:scale-[1.01]`}>
-               <AlertTriangle className="text-t-error shrink-0" size={20} />
+            <div className={`flex items-center gap-3 p-4 ${rPill} ${sClass} bg-t-bad/10 border border-t-bad/30 text-t-text transition-transform hover:scale-[1.01]`}>
+               <AlertTriangle className="text-t-bad shrink-0" size={20} />
                <div className="flex-1 text-sm"><span className="font-bold">Connection Lost:</span> Check your internet settings.</div>
             </div>
-            <div className={`flex items-center gap-3 p-4 ${rPill} ${sClass} bg-t-success/10 border border-t-success/30 text-t-text transition-transform hover:scale-[1.01]`}>
-               <Check className="text-t-success shrink-0" size={20} />
+            <div className={`flex items-center gap-3 p-4 ${rPill} ${sClass} bg-t-good/10 border border-t-good/30 text-t-text transition-transform hover:scale-[1.01]`}>
+               <Check className="text-t-good shrink-0" size={20} />
                <div className="flex-1 text-sm"><span className="font-bold">Success:</span> Your changes have been saved.</div>
             </div>
          </div>
@@ -454,7 +454,7 @@ const PreviewSection: React.FC<PreviewProps> = ({ themeName, options }) => {
       <section className="space-y-4">
          <h3 className="text-sm font-bold uppercase tracking-wider text-t-textMuted">Navigation Structure</h3>
          <NavTabsDemo bClass={bClass} rClass={rClass} sClass={sClass} bBottom={bBottom} rClassInner={rClassInner} options={options} themeName={themeName} />
-         <div className={`${bClass} ${rClass} ${sClass} bg-t-surface p-6`}>
+         <div className={`${bClass} ${rClass} ${sClass} bg-t-card p-6`}>
            <div className="flex items-center text-xs text-t-textMuted mb-6">
              <span className="hover:text-t-primary cursor-pointer transition-colors">Home</span> <ChevronRight size={12} className="mx-1"/> 
              <span className="hover:text-t-primary cursor-pointer transition-colors">Settings</span> <ChevronRight size={12} className="mx-1"/> 

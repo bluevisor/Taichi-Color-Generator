@@ -71,7 +71,7 @@ const CompactSwatch: React.FC<CompactSwatchProps> = ({
   return (
     <div className="flex flex-col rounded-lg overflow-hidden border border-t-border group/token transition-all hover:scale-[1.02] hover:shadow-md">
       {/* Header with token name and lock */}
-      <div className="flex items-center justify-between px-2 py-1 bg-t-surface text-[9px] font-bold uppercase tracking-wider text-t-text/70">
+      <div className="flex items-center justify-between px-2 py-1 bg-t-card text-[9px] font-bold uppercase tracking-wider text-t-text/70">
         <span className="truncate">{tokenKey}</span>
         <button
           onClick={onToggleLock}
@@ -131,13 +131,13 @@ const SwatchStrip: React.FC<SwatchStripProps> = ({ light, dark, format, isDarkUI
   const themeTokens = isDarkUI ? dark : light;
   
   // 10 tokens to display
-  const tokens = ['bg', 'surface', 'text', 'textMuted', 'textOnColor', 'primary', 'secondary', 'accent', 'success', 'error'];
+  const tokens = ['bg', 'card', 'text', 'textMuted', 'textOnColor', 'primary', 'secondary', 'accent', 'good', 'bad'];
 
   // CSS Variables for theme colors
   const styleVars = {
     '--bg': themeTokens.bg,
-    '--surface': themeTokens.surface,
-    '--surface2': themeTokens.surface2,
+    '--card': themeTokens.card,
+    '--card2': themeTokens.card2,
     '--text': themeTokens.text,
     '--text-muted': themeTokens.textMuted,
     '--text-on-color': themeTokens.textOnColor,
@@ -149,12 +149,12 @@ const SwatchStrip: React.FC<SwatchStripProps> = ({ light, dark, format, isDarkUI
     '--accent-fg': themeTokens.accentFg,
     '--border': themeTokens.border,
     '--ring': themeTokens.ring,
-    '--success': themeTokens.success,
-    '--success-fg': themeTokens.successFg,
+    '--good': themeTokens.good,
+    '--good-fg': themeTokens.goodFg,
     '--warn': themeTokens.warn,
     '--warn-fg': themeTokens.warnFg,
-    '--error': themeTokens.error,
-    '--error-fg': themeTokens.errorFg,
+    '--bad': themeTokens.bad,
+    '--bad-fg': themeTokens.badFg,
     backgroundColor: themeTokens.bg
   } as React.CSSProperties;
 

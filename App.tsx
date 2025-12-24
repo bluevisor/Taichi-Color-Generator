@@ -16,8 +16,8 @@ const MAX_HISTORY = 20;
 const getStyleVars = (tokens: ThemeTokens) => {
   return {
     '--bg': tokens.bg,
-    '--surface': tokens.surface,
-    '--surface2': tokens.surface2,
+    '--card': tokens.card,
+    '--card2': tokens.card2,
     '--text': tokens.text,
     '--text-muted': tokens.textMuted,
     '--primary': tokens.primary,
@@ -28,12 +28,12 @@ const getStyleVars = (tokens: ThemeTokens) => {
     '--accent-fg': tokens.accentFg,
     '--border': tokens.border,
     '--ring': tokens.ring,
-    '--success': tokens.success,
-    '--success-fg': tokens.successFg,
+    '--good': tokens.good,
+    '--good-fg': tokens.goodFg,
     '--warn': tokens.warn,
     '--warn-fg': tokens.warnFg,
-    '--error': tokens.error,
-    '--error-fg': tokens.errorFg,
+    '--bad': tokens.bad,
+    '--bad-fg': tokens.badFg,
   } as React.CSSProperties;
 };
 
@@ -224,16 +224,16 @@ const App: React.FC = () => {
     // This ensures that when a "master" token is locked, its dependent tokens 
     // stay harmonious with it (preventing broken contrast or hue mismatches)
     const relatedTokens: Record<string, string[]> = {
-      bg: ['surface', 'surface2'], // Surface usually depends on BG context
-      surface: ['surface2'],
+      bg: ['card', 'card2'], // Card usually depends on BG context
+      card: ['card2'],
       text: ['textMuted', 'border'], // Typography hierarchy and borders should match text
       textMuted: [],
       textOnColor: [],  // Always white, but lockable
       primary: ['primaryFg', 'ring'],
       secondary: ['secondaryFg'],
       accent: ['accentFg'],
-      success: ['successFg'],
-      error: ['errorFg'],
+      good: ['goodFg'],
+      bad: ['badFg'],
       warn: ['warnFg'],
       border: [],
     };
@@ -409,7 +409,7 @@ const App: React.FC = () => {
   
   // Specific overrides for inputs to ensure contrast within the shell
   const inputStyle = {
-    backgroundColor: shellTheme.surface,
+    backgroundColor: shellTheme.card,
     borderColor: shellTheme.border,
     color: shellTheme.text,
   };
@@ -469,7 +469,7 @@ const App: React.FC = () => {
 
           {/* Desktop: All Controls */}
           <div className="hidden md:flex items-center gap-4 overflow-x-auto no-scrollbar">
-            <div className="flex items-center rounded-lg p-0.5 gap-0.5 shrink-0" style={{ backgroundColor: shellTheme.surface2 }}>
+            <div className="flex items-center rounded-lg p-0.5 gap-0.5 shrink-0" style={{ backgroundColor: shellTheme.card2 }}>
               <button onClick={undo} disabled={historyIndex <= 0} className="p-1.5 rounded-md disabled:opacity-30 transition-colors hover:bg-white/10">
                 <Undo size={16} />
               </button>
@@ -608,7 +608,7 @@ const App: React.FC = () => {
         {showMobileMenu && (
           <div 
             className="md:hidden border-t p-4 space-y-4"
-            style={{ borderColor: shellTheme.border, backgroundColor: shellTheme.surface }}
+            style={{ borderColor: shellTheme.border, backgroundColor: shellTheme.card }}
           >
             {/* Mode and Format Selectors */}
             <div className="space-y-2">
@@ -730,7 +730,7 @@ const App: React.FC = () => {
       {showMobileNotice && (
         <div 
           className="md:hidden flex items-center justify-between px-4 py-2 text-xs shrink-0"
-          style={{ backgroundColor: shellTheme.surface, borderBottom: `1px solid ${shellTheme.border}` }}
+          style={{ backgroundColor: shellTheme.card, borderBottom: `1px solid ${shellTheme.border}` }}
         >
           <span className="text-t-text">For best results, use this website on a desktop computer.</span>
           <button 

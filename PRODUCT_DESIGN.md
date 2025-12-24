@@ -29,26 +29,26 @@ The generator produces 10 lockable/editable color tokens:
 | Token         | Purpose                                       |
 | ------------- | --------------------------------------------- |
 | `bg`          | Main page/app background                      |
-| `surface`     | Card, modal, container backgrounds            |
+| `card`        | Card, modal, container backgrounds            |
 | `text`        | Primary body text                             |
 | `textMuted`   | Secondary/muted text (captions, labels)       |
 | `textOnColor` | Text on colored backgrounds (buttons, badges) |
 | `primary`     | Primary brand/action color                    |
 | `secondary`   | Secondary brand color                         |
 | `accent`      | Highlight/accent color                        |
-| `success`     | Success/positive state                        |
-| `error`       | Error/destructive state                       |
+| `good`        | Success/positive state                        |
+| `bad`         | Error/destructive state                       |
 
 ### Additional Internal Tokens (Not Displayed in Swatch Strip)
 
 These tokens are generated but not shown in the main swatch strip:
 
-- `surface2` - Secondary surface (derived from `surface`)
+- `card2` - Secondary surface (derived from `card`)
 - `primaryFg` - Foreground on primary (typically white)
 - `secondaryFg` - Foreground on secondary
 - `accentFg` - Foreground on accent
-- `successFg` - Foreground on success
-- `errorFg` - Foreground on error
+- `goodFg` - Foreground on success
+- `badFg` - Foreground on error
 - `warnFg` - Foreground on warn
 - `border` - Border color (derived from text)
 - `ring` - Focus ring color (derived from primary)
@@ -87,16 +87,17 @@ user toggle)
 #### 1.1 Logo / Brand (Left Side)
 
 - **Taichi Icon**: Custom yin-yang SVG icon representing duality of light/dark
-  themes
+  themes. use `card` color for icon background, use light `bg` color for icon
+  white parts, use dark `bg` color for icon black parts.
 - **Text**: "Taichi Theme Generator"
-- **Interaction**: None (decorative)
+- **Interaction**: logo rotates 180 degrees on hover (decorative)
 
 #### 1.2 Navigation Controls (Right Side)
 
 Two navigation arrows for history:
 
-- **Left Arrow** (`←`): Navigate to previous theme in history (newer)
-- **Right Arrow** (`→`): Navigate to next theme in history (older)
+- **Left Arrow** (`←`): Navigate to previous theme in history (older)
+- **Right Arrow** (`→`): Navigate to next theme in history (newer)
 
 #### 1.3 Generate Button
 
@@ -109,25 +110,29 @@ Two navigation arrows for history:
 
 Harmony mode selection for color generation:
 
-- **Random**: Completely random hue selection
+- **Random**: Random hue selection based on current brightness, contrast, and
+  saturation settings
 - **Monochrome**: Single hue with saturation variations
 - **Analogous**: Adjacent hues (±30°)
 - **Complementary**: Opposite hues (180° apart)
 - **Split-Complementary**: Base + two colors ±150° apart
 - **Triadic**: Three colors 120° apart
+- **Tetradic**: Four colors 90° apart
+- **Compound**: Two complementary pairs
+- **Triadic Split**: Three colors 120° apart with one color shifted ±150°
 
 #### 1.5 Format Dropdown
 
-Output color format for copy/export:
+Output color format for copy/export and on-screen display:
 
-- **HEX**: `#RRGGBB`
-- **RGB**: `rgb(R, G, B)`
-- **CMYK**: `cmyk(C%, M%, Y%, K%)`
-- **HSL**: `hsl(H, S%, L%)`
-- **LAB**: `lab(L% a b)`
-- **LCH**: `lch(L% C H)`
-- **OKLCH**: `oklch(L% C H)`
-- **Display P3**: `color(display-p3 R G B)`
+- **HEX**: `#RRGGBB` | RRGGBB (default)
+- **RGB (0-255)**: `rgb(R, G, B)` | R, G, B (0-255)
+- **RGB (0-1)**: `rgb(R, G, B)` | R, G, B (0-1)
+- **CMYK**: `cmyk(C%, M%, Y%, K%)` | C%, M%, Y%, K% (0-100)
+- **HSL**: `hsl(H, S%, L%)` | H, S%, L%
+- **LAB**: `lab(L% a b)` | L%, a, b
+- **OKLCH**: `oklch(L% C H)` | L%, C, H
+- **Display P3**: `color(display-p3 R G B)` | R, G, B
 
 #### 1.6 Action Buttons (Icon Buttons)
 
@@ -156,70 +161,78 @@ Output color format for copy/export:
 
 #### 2.1 Border Width Slider
 
-- **Range**: 0-3 (None, 1px, 2px, 4px)
+- **Range**: 0-5 (None, 1px, 2px, 3px, 4px, 5px) (default 1)
 - **Labels**: "None" ↔ "Thick"
 - **Effect**: Controls border thickness on UI elements in preview
 - **Display**: Shows actual pixel value (e.g., "2px")
 
-#### 2.2 Shadows Slider
+#### 2.2 Shadow Size Slider
 
-- **Range**: 0-5 (None to XL shadow)
+- **Range**: 0-5 (None to XL shadow) (default 3)
 - **Labels**: "Flat" ↔ "Float"
-- **Effect**: Controls shadow intensity on cards/buttons in preview
+- **Effect**: Controls shadow size on cards/buttons in preview
 - **Display**: Shows level number (e.g., "Lvl 3")
 
-#### 2.3 Roundness Slider
+#### 2.3 Shadow Opacity Slider
 
-- **Range**: 0-5 (Sharp to Very Round)
+- **Range**: 0-100 (%) (default 50%)
+- **Labels**: "0%" ↔ "100%"
+- **Effect**: Controls shadow opacity on cards/buttons in preview
+- **Display**: Shows actual percentage value (e.g., "50%")
+
+#### 2.4 Roundness Slider
+
+- **Range**: 0-5 (Sharp to Very Round) (default 3)
 - **Labels**: "Square" ↔ "Round"
 - **Effect**: Controls border-radius on UI elements
 - **Mapping**: 0=none, 1=sm, 2=md, 3=xl, 4=2xl, 5=3xl/full
 
-#### 2.4 Gradients Slider
+#### 2.5 Gradients Slider
 
-- **Range**: 0-2 (Solid, Subtle, Vivid)
-- **Labels**: "Solid" ↔ "Vivid"
-- **Effect**: Controls gradient intensity on primary buttons
-- **Mapping**: 0=solid color, 1=subtle linear, 2=strong diagonal
-
-#### 2.5 Saturation Slider
-
-- **Range**: 0-4
-- **Labels**: "Mono" ↔ "Vivid"
-- **Effect**: Controls color vibrancy across all generated colors
-- **Behavior**:
-  - Level 0: Pure grayscale
-  - Level 1-4: Progressively more saturated colors
-- **Triggers Regeneration**: Yes
+- **Range**: 0-5 (none, uptodown, downtoup, lefttoright, righttoleft, diagonal)
+- **Labels**: "None" ↔ "Diagonal"
+- **Effect**: Controls gradient direction on preview elements
+- **Mapping**: 0=solid color, 1=uptodown, 2=downtoup, 3=lefttoright,
+  4=righttoleft, 5=diagonal
 
 #### 2.6 Brightness Slider
 
 - **Range**: 1-5
 - **Labels**: "Dim" ↔ "Bright"
 - **Default**: 3 (Normal)
-- **Effect**: Compresses entire color range toward dark or bright
+- **Effect**: Shifts entire color range toward dark or bright (all colors in the
+  theme)
 - **Behavior**:
-  - Level 1 (Dim): Compresses toward dark - colors near white shift toward 50%
-    gray
+  - Level 1 (Dim): Shift all colors toward black (darken)
   - Level 3 (Normal): No change - equal headroom to white and black
-  - Level 5 (Bright): Compresses toward bright - colors near black shift toward
-    50% gray
+  - Level 5 (Bright): Shift all colors toward white (lighten)
 - **Algorithm**: Uses `applyBrightness(lightness, level)` function:
   - Colors at 50% gray: minimal/no shift
   - Colors near 0% or 100%: maximum shift toward 50%
   - Shift amount proportional to distance from center gray
 - **Triggers Regeneration**: Yes
-- **Applied To**: ALL color tokens (bg, surface, text, primary, secondary,
-  accent, success, error, border, ring)
+- **Applied To**: ALL color tokens in the theme
 
 #### 2.7 Contrast Slider
 
 - **Range**: 1-5
 - **Labels**: "Soft" ↔ "Max"
-- **Effect**: Controls difference between text and background
-- **Behavior**: Higher values create more readable text with greater lightness
-  difference
+- **Effect**: Controls difference between darkest and lightest colors in the
+  theme (Dynamic Range)
+- **Behavior**: Higher values create greater contrast between colors
 - **Triggers Regeneration**: Yes
+- **Applied To**: ALL color tokens in the theme
+
+#### 2.8 Saturation Slider
+
+- **Range**: 0-5
+- **Labels**: "Mono" ↔ "Vivid"
+- **Effect**: Controls color saturation across all generated colors
+- **Behavior**:
+  - Level 0: Pure grayscale
+  - Level 1-5: Progressively more saturated colors
+- **Triggers Regeneration**: Yes
+- **Applied To**: ALL color tokens in the theme
 
 ---
 
@@ -233,7 +246,7 @@ Output color format for copy/export:
 
 Each swatch displays:
 
-- **Header Row**: Token name (uppercase) + Lock icon
+- **Header Row**: Token name (uppercase) + Lock / unlock icon
 - **Light/Dark Side-by-Side**: Two color rectangles showing light and dark
   values
 - **Color Values**: Displayed inside each swatch with auto-contrasting text
@@ -241,21 +254,24 @@ Each swatch displays:
 #### 3.2 Swatch Interactions
 
 - **Click on Swatch**: Copies color value to clipboard
-- **Click Lock Icon**: Locks color to prevent regeneration
+- **Click Unlock Icon**: Turns unlock icon into lock icon and locks color to
+  prevent change
+- **Click Lock Icon**: Turns lock icon into unlock icon and unlocks color to
+  allow change
 - **Hover**: Scales slightly with shadow for visual feedback
 
 #### 3.3 Token Display Order
 
 1. `bg`
-2. `surface`
+2. `card`
 3. `text`
 4. `textMuted`
 5. `textOnColor`
 6. `primary`
 7. `secondary`
 8. `accent`
-9. `success`
-10. `error`
+9. `good`
+10. `bad`
 
 ---
 
@@ -266,18 +282,18 @@ Each swatch displays:
 
 #### 4.1 Light Theme Preview (Left)
 
-Displays UI components using the light theme colors.
+Displays sample UI components using the light theme colors.
 
 #### 4.2 Dark Theme Preview (Right)
 
-Displays UI components using the dark theme colors.
+Displays sample UI components using the dark theme colors.
 
 #### 4.3 Preview Components (Both Sides)
 
 ##### 4.3.1 Theme Badge
 
 - Pill badge showing "Light Theme Preview" or "Dark Theme Preview"
-- Uses `primary` color at 15% opacity with border
+- Uses `primary` color at 50% opacity with border and `card` color as background
 
 ##### 4.3.2 Main Heading
 
@@ -294,14 +310,13 @@ Displays UI components using the dark theme colors.
 - "Press Space to generate..." instruction
 - Uses `accent` color for the keyboard badge
 
-##### 4.3.5 Display Section (Hero Banner)
+##### 4.3.5 Image Section (Hero Banner)
 
 - Large hero card with background image
 - Gradient overlays using `primary` and `accent`
 - "Premium Experience" badge using `secondary`
 - Main headline with colored text spans
-- Shimmer animation on hover (plays once)
-- Float-up animation on hover
+- Card float-up animation on hover
 
 ##### 4.3.6 Actions Section
 
@@ -310,9 +325,9 @@ Demonstrates button styles:
 - **Primary Button**: Uses `primary` color + gradient (if enabled)
 - **Secondary Button**: Uses `secondary` color
 - **Accent Button**: Uses `accent` color
-- **Outline Button**: Border-only with `surface` background
-- **Error Button**: Uses `error` color
-- **Success Button**: Uses `success` color
+- **Outline Button**: Border-only with `card` background
+- **Error Button**: Uses `bad` color
+- **Success Button**: Uses `good` color
 - **Icon Buttons**: Settings and Bell icons
 
 ##### 4.3.7 Input Fields Section
@@ -330,8 +345,8 @@ Demonstrates button styles:
 ##### 4.3.9 Feedback Section (Alerts)
 
 - Info alert using `secondary`
-- Error alert using `error`
-- Success alert using `success`
+- Error alert using `bad`
+- Success alert using `good`
 
 ##### 4.3.10 Navigation Section
 
@@ -382,6 +397,7 @@ Features:
 | `Space`        | Generate new theme          |
 | `←` / `→`      | Navigate theme history      |
 | `Cmd/Ctrl + Z` | Undo (go to previous theme) |
+| Cmd/Ctrl + C`  | Copy theme URL              |
 
 ---
 

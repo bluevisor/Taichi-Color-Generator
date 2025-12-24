@@ -52,7 +52,7 @@ async function rateLimit(req: VercelRequest, max: number, windowMs: number) {
  *     "secondary": string,
  *     "accent": string,
  *     "background": string,
- *     "surface": string,
+ *     "card": string,
  *     "text": string,
  *     "textSecondary": string,
  *     "border": string
@@ -167,7 +167,7 @@ function generateTheme(
     'secondary',
     'accent',
     'background',
-    'surface',
+    'card',
     'text',
     'textSecondary',
     'border'
@@ -201,7 +201,7 @@ function generateTheme(
 // Yin-Yang style: Balance of light and dark
 function generateYinYangColor(token: string, baseColor?: string): string {
   const isDark = ['text', 'textSecondary'].includes(token);
-  const isLight = ['background', 'surface'].includes(token);
+  const isLight = ['background', 'card'].includes(token);
   
   if (isDark) {
     return `hsl(${Math.random() * 360}, ${10 + Math.random() * 20}%, ${10 + Math.random() * 15}%)`;

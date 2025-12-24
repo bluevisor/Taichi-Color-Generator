@@ -508,8 +508,8 @@ export function generateTheme(
   // applyBrightness shifts lightness proportionally based on distance from 50% gray
   const light: ThemeTokens = {
     bg: hslToHex(primaryHue, bgSat, applyBrightness(lightBgL, brightnessLevel)), 
-    surface: hslToHex(primaryHue, bgSat, applyBrightness(Math.min(100, lightSurfL), brightnessLevel)),
-    surface2: hslToHex(primaryHue, bgSat, applyBrightness(Math.min(100, lightSurfL - 3), brightnessLevel)),
+    card: hslToHex(primaryHue, bgSat, applyBrightness(Math.min(100, lightSurfL), brightnessLevel)),
+    card2: hslToHex(primaryHue, bgSat, applyBrightness(Math.min(100, lightSurfL - 3), brightnessLevel)),
     text: hslToHex(primaryHue, 10, applyBrightness(lightTextL, brightnessLevel)), 
     textMuted: hslToHex(primaryHue, 10, applyBrightness(lightTextL + 30, brightnessLevel)),
     textOnColor: '#ffffff', // Always white for colored backgrounds
@@ -531,18 +531,18 @@ export function generateTheme(
     ring: hslToHex(primaryHue, 60, applyBrightness(60, brightnessLevel)),
     
     // Success, warn, error: follow both saturation AND contrast sliders + brightness
-    success: hslToHex(142, clamp(primarySat, sMin, sMax), applyBrightness(Math.max(lightColorMod - 5, 40), brightnessLevel)),
-    successFg: '#ffffff',
+    good: hslToHex(142, clamp(primarySat, sMin, sMax), applyBrightness(Math.max(lightColorMod - 5, 40), brightnessLevel)),
+    goodFg: '#ffffff',
     warn: hslToHex(38, clamp(primarySat, sMin, sMax), applyBrightness(Math.max(lightColorMod, 45), brightnessLevel)),
     warnFg: '#ffffff',
-    error: hslToHex(0, clamp(primarySat, sMin, sMax), applyBrightness(Math.max(lightColorMod + 5, 50), brightnessLevel)),
-    errorFg: '#ffffff'
+    bad: hslToHex(0, clamp(primarySat, sMin, sMax), applyBrightness(Math.max(lightColorMod + 5, 50), brightnessLevel)),
+    badFg: '#ffffff'
   };
 
   const dark: ThemeTokens = {
     bg: hslToHex(primaryHue, bgSat, applyBrightness(darkBgL, brightnessLevel)), 
-    surface: hslToHex(primaryHue, bgSat, applyBrightness(darkSurfL, brightnessLevel)), 
-    surface2: hslToHex(primaryHue, bgSat, applyBrightness(darkSurfL + 5, brightnessLevel)),
+    card: hslToHex(primaryHue, bgSat, applyBrightness(darkSurfL, brightnessLevel)), 
+    card2: hslToHex(primaryHue, bgSat, applyBrightness(darkSurfL + 5, brightnessLevel)),
     text: hslToHex(primaryHue, 10, applyBrightness(darkTextL, brightnessLevel)),
     textMuted: hslToHex(primaryHue, 10, applyBrightness(darkTextL - 30, brightnessLevel)),
     textOnColor: '#ffffff', // Always white for colored backgrounds
@@ -561,12 +561,12 @@ export function generateTheme(
     ring: hslToHex(primaryHue, 60, applyBrightness(60, brightnessLevel)),
     
     // Success, warn, error: follow both saturation AND contrast sliders + brightness
-    success: hslToHex(142, clamp(primarySat, sMin, sMax), applyBrightness(Math.max(darkColorMod - 10, 35), brightnessLevel)),
-    successFg: '#ffffff',
+    good: hslToHex(142, clamp(primarySat, sMin, sMax), applyBrightness(Math.max(darkColorMod - 10, 35), brightnessLevel)),
+    goodFg: '#ffffff',
     warn: hslToHex(38, clamp(primarySat, sMin, sMax), applyBrightness(Math.max(darkColorMod - 5, 40), brightnessLevel)),
     warnFg: '#ffffff',
-    error: hslToHex(0, clamp(primarySat, sMin, sMax), applyBrightness(Math.max(darkColorMod, 45), brightnessLevel)),
-    errorFg: '#ffffff'
+    bad: hslToHex(0, clamp(primarySat, sMin, sMax), applyBrightness(Math.max(darkColorMod, 45), brightnessLevel)),
+    badFg: '#ffffff'
   };
 
   return { light, dark, seed: seedColor || hslToHex(baseHue, baseSat, 50) };

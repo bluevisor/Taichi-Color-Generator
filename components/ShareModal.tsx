@@ -53,7 +53,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, url, theme }) 
     >
       <div 
         className={`w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden transform transition-all duration-300 ${isOpen ? 'scale-100 translate-y-0' : 'scale-95 translate-y-4'}`}
-        style={{ backgroundColor: theme.surface, color: theme.text, borderColor: theme.border, borderWidth: 1 }}
+        style={{ backgroundColor: theme.card, color: theme.text, borderColor: theme.border, borderWidth: 1 }}
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
@@ -104,7 +104,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, url, theme }) 
 
           <div className="w-full space-y-2">
              <div className="flex items-center gap-2 p-1.5 rounded-xl border transition-colors focus-within:ring-2" 
-                  style={{ backgroundColor: theme.surface2, borderColor: theme.border }}>
+                  style={{ backgroundColor: theme.card2, borderColor: theme.border }}>
                <div className="p-2 text-opacity-50" style={{ color: theme.text }}>
                  <LinkIcon size={16} />
                </div>
@@ -117,7 +117,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, url, theme }) 
                <button 
                  onClick={handleCopy}
                  className="p-2 rounded-lg font-medium text-sm flex items-center gap-2 transition-all hover:brightness-110 active:scale-95"
-                 style={{ backgroundColor: copied ? theme.success : theme.primary, color: '#fff' }}
+                 style={{ backgroundColor: copied ? theme.good : theme.primary, color: '#fff' }}
                >
                  {copied ? <Check size={16} /> : <Copy size={16} />}
                </button>
