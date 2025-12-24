@@ -101,19 +101,10 @@ const HeroBanner: React.FC<{
         </div>
 
         {/* Dynamic Theme Overlay - Fixed to card background */}
-        <div className={`absolute inset-0 bg-t-card transition-colors duration-500`} />
-        {/* Soft gradient overlay for flavor */}
-        <div className={`absolute inset-0 bg-gradient-to-tr from-t-bg/50 to-transparent`} />
+        <div className={`absolute inset-0 ${themeName === 'Dark' ? 'bg-black/80' : 'bg-white/80'} backdrop-blur-[1px] transition-colors duration-500`} />
         
-        {/* Gradient Accents - Animated on hover */}
-        <div 
-          className="absolute inset-0 opacity-30 mix-blend-overlay transition-all duration-700 group-hover:opacity-50" 
-          style={{ 
-            backgroundImage: `radial-gradient(circle at 20% 30%, var(--primary) 0%, transparent 60%), radial-gradient(circle at 80% 70%, var(--accent) 0%, transparent 60%)`,
-            backgroundSize: '200% 200%',
-            animation: 'none'
-          }} 
-        />
+        {/* Soft gradient overlay for flavor */}
+        <div className={`absolute inset-0 bg-gradient-to-tr from-t-bg/50 to-transparent mix-blend-overlay`} />
         
         {/* Animated shimmer effect on hover - plays once */}
         {/* Smooth Wave Background instead of radial gradients */}
