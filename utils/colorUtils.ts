@@ -301,7 +301,10 @@ export function parseToHex(input: string, contextFormat: ColorFormat): string | 
     // Check if it already has a function wrapper
     const hasWrapper = /^[a-z]+\(/.test(clean);
 
-    if (!hasWrapper && !clean.startsWith('#')) {
+    // Check for raw hex (3, 4, 6, 8 chars)
+    if (/^[0-9A-Fa-f]{3,8}$/.test(clean)) {
+        testString = '#' + clean;
+    } else if (!hasWrapper && !clean.startsWith('#')) {
         // Assume raw numbers
         if (contextFormat === 'rgb') {
              // 255 255 255 or 255, 255, 255

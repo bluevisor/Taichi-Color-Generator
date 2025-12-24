@@ -3,6 +3,50 @@ import { ThemeTokens, ColorFormat, LockedColors } from '../types';
 import { formatColor, parseToHex, hexToRgb } from '../utils/colorUtils';
 import { Copy, Check, Lock, Unlock } from 'lucide-react';
 
+// Editable Input Component
+const EditableColorValue: React.FC<{
+  value: string;
+  onChange: (val: string) => void;
+  color: string;
+}> = ({ value, onChange, color }) => {
+  const [localVal, setLocalVal] = useState(value);
+  const [isEditing, setIsEditing] = useState(false);
+
+  useEffect(() => {
+    if (!isEditing) setLocalVal(value);
+  }, [value, isEditing]);
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.currentTarget.blur();
+    }
+  };
+
+  const handleBlur = () => {
+    setIsEditing(false);
+    if (localVal !== value) {
+      onChange(localVal);
+    }
+  };
+
+  return (
+    <input 
+      type="text"
+      value={localVal}
+      onFocus={() => setIsEditing(true)}
+      onChange={(e) => setLocalVal(e.target.value)}
+      onBlur={handleBlur}
+      onKeyDown={handleKeyDown}
+      onClick={(e) => {
+        e.stopPropagation(); // Stop propagation to prevent Color Picker specific open
+        e.preventDefault(); // Ensure focus lands here
+      }}
+      className="text-[8px] font-mono font-medium bg-transparent border-none p-0 text-center w-full focus:ring-0 truncate px-1 relative z-20 pointer-events-auto"
+      style={{ color: color }}
+    />
+  );
+};
+
 interface SwatchStripProps {
   light: ThemeTokens;
   dark: ThemeTokens;
@@ -144,12 +188,14 @@ const CompactSwatch: React.FC<CompactSwatchProps> = ({
           {copied === 'light' ? (
             <Check size={14} style={{ color: lightContrast }} strokeWidth={3} />
           ) : (
-            <span 
-              className="text-[8px] font-mono font-medium opacity-80 group-hover/token:opacity-100 truncate px-1 pointer-events-none"
-              style={{ color: lightContrast }}
-            >
-              {lightShort}
-            </span>
+            <EditableColorValue 
+              value={lightShort} 
+              onChange={(val) => {
+                 const newHex = parseToHex(val, format);
+                 if (newHex) onUpdate('light', tokenKey as keyof ThemeTokens, newHex);
+              }}
+              color={lightContrast}
+            />
           )}
         </div>
         
@@ -172,12 +218,14 @@ const CompactSwatch: React.FC<CompactSwatchProps> = ({
           {copied === 'dark' ? (
             <Check size={14} style={{ color: darkContrast }} strokeWidth={3} />
           ) : (
-            <span 
-              className="text-[8px] font-mono font-medium opacity-80 group-hover/token:opacity-100 truncate px-1 pointer-events-none"
-              style={{ color: darkContrast }}
-            >
-              {darkShort}
-            </span>
+            <EditableColorValue 
+              value={darkShort} 
+              onChange={(val) => {
+                 const newHex = parseToHex(val, format);
+                 if (newHex) onUpdate('dark', tokenKey as keyof ThemeTokens, newHex);
+              }}
+              color={darkContrast}
+            />
           )}
         </div>
       </div>
