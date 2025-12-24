@@ -215,9 +215,14 @@ const PreviewSection: React.FC<PreviewProps> = ({ themeName, options }) => {
       default: return 'shadow';
     }
   };
-  const sClass = `${getShadow(options.shadowStrength)} shadow-black/[${options.shadowOpacity / 100}]`;
   // We must re-apply the shadow color opacity on hover because a new shadow size utility might reset the shadow color defaults.
-  const sClassHover = `${getShadow(Math.min(5, options.shadowStrength + 2))} shadow-black/[${options.shadowOpacity / 100}]`;
+  // Tailwind Arbitrary values in variables can sometimes be tricky if not fully formed.
+  // Let's ensure the class is complete.
+  const shadowOpacityClass = `shadow-black/[${options.shadowOpacity / 100}]`;
+  const sClass = `${getShadow(options.shadowStrength)} ${shadowOpacityClass}`;
+  const sHoverSize = getShadow(Math.min(5, options.shadowStrength + 2));
+  // We will apply hover:${sHoverSize} and hover:${shadowOpacityClass} manually in the className string to avoid variable expansion issues with the JIT engine if any
+  const sClassHover = `${sHoverSize} ${shadowOpacityClass}`;
   
   // Gradients
   // 0: None
@@ -303,42 +308,42 @@ const PreviewSection: React.FC<PreviewProps> = ({ themeName, options }) => {
           
           {/* Primary Button */}
           <button className={`${primaryBg} px-5 py-2.5 ${rPill} font-semibold ${sClass} ${bAction} transition-all duration-300 
-            hover:${sClassHover} hover:-translate-y-0.5 hover:brightness-110 
+            hover:${sHoverSize} hover:${shadowOpacityClass} hover:-translate-y-0.5 hover:brightness-110 
             active:translate-y-0 active:scale-95 active:shadow-none focus:ring-4 focus:ring-t-primary/30`}>
             Primary Action
           </button>
 
           {/* Secondary Button */}
           <button className={`${secondaryBg} px-5 py-2.5 ${rPill} font-semibold ${bAction} ${sClass} transition-all duration-300 
-            hover:${sClassHover} hover:-translate-y-0.5 hover:brightness-110
+            hover:${sHoverSize} hover:${shadowOpacityClass} hover:-translate-y-0.5 hover:brightness-110
             active:translate-y-0 active:scale-95 active:shadow-none focus:ring-4 focus:ring-t-secondary/30`}>
             Secondary
           </button>
 
           {/* Accent Button */}
           <button className={`${accentBg} px-5 py-2.5 ${rPill} font-semibold ${bAction} ${sClass} transition-all duration-300 
-            hover:${sClassHover} hover:-translate-y-0.5 hover:brightness-110
+            hover:${sHoverSize} hover:${shadowOpacityClass} hover:-translate-y-0.5 hover:brightness-110
             active:translate-y-0 active:scale-95 active:shadow-none focus:ring-4 focus:ring-t-accent/30`}>
             Accent
           </button>
 
           {/* Outline Button */}
           <button className={`${bClass} text-t-text bg-t-card px-5 py-2.5 ${rPill} font-semibold ${sClass} transition-all duration-300 
-            hover:border-t-primary hover:text-t-primary hover:bg-t-bg hover:${sClassHover}
+            hover:border-t-primary hover:text-t-primary hover:bg-t-bg hover:${sHoverSize} hover:${shadowOpacityClass}
             active:scale-95 active:bg-t-primary/5 focus:ring-4 focus:ring-t-primary/30`}>
             Outline
           </button>
 
           {/* Destructive Button */}
           <button className={`${badBg} px-5 py-2.5 ${rPill} font-semibold ${sClass} ${bAction} transition-all duration-200 
-            hover:shadow-md hover:brightness-110 hover:${sClassHover}
+            hover:shadow-md hover:brightness-110 hover:${sHoverSize} hover:${shadowOpacityClass}
             active:scale-95 active:brightness-90`}>
             Error
           </button>
 
           {/* Success Button */}
           <button className={`${goodBg} px-5 py-2.5 ${rPill} font-semibold ${sClass} ${bAction} transition-all duration-200 
-            hover:shadow-md hover:brightness-110 hover:${sClassHover}
+            hover:shadow-md hover:brightness-110 hover:${sHoverSize} hover:${shadowOpacityClass}
             active:scale-95 active:brightness-90`}>
             Success
           </button>
@@ -414,40 +419,42 @@ const PreviewSection: React.FC<PreviewProps> = ({ themeName, options }) => {
       {/* Cards & Content - Shows all 8 colors */}
       <section className="space-y-6">
         <h3 className="text-sm font-bold uppercase tracking-wider text-t-textMuted">Surfaces & Cards</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          
-          {/* Card 1 - Revenue Card */}
-          <div className={`bg-t-card ${bClass} ${rClass} p-6 ${sClass} transition-all duration-300 relative overflow-hidden group hover:${sClassHover} hover:-translate-y-1 ${options.borderWidth > 0 ? 'hover:border-t-primary/30' : ''}`}>
-             <div className={`absolute top-0 left-0 w-full h-1 ${primaryBg} group-hover:h-1.5 transition-all`}></div>
-             <div className="flex justify-between items-start mb-4">
-               <div className={`p-2 bg-t-secondary/15 ${rClassInner} text-t-secondary group-hover:bg-t-secondary group-hover:text-t-textOnColor transition-colors`}>
-                 <BarChart2 size={24} />
-               </div>
-               <span className={`text-xs font-bold text-t-good bg-t-good/15 px-2 py-1 ${rClassInner} border border-t-good/30`}>+24.5%</span>
-             </div>
-             <h4 className="text-lg font-bold text-t-text mb-1">Weekly Revenue</h4>
-             <p className="text-3xl font-mono font-bold text-t-text mb-4">$45,231.89</p>
-             <div className={`h-2 w-full bg-t-text/10 ${rFull} overflow-hidden`}>
-               <div className={`h-full ${primaryBg} w-[70%] group-hover:w-[75%] transition-all duration-1000`}></div>
-             </div>
+        <div className={`grid grid-cols-1 md:grid-cols-2 gap-6`}>
+          {/* Revenue Card */}
+          <div className={`bg-t-card p-6 ${rClass} ${bClass} ${sClass} transition-all duration-300 hover:-translate-y-1 hover:${sHoverSize} hover:${shadowOpacityClass} group`}>
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <p className="text-t-textMuted text-sm font-medium">Total Revenue</p>
+                <h4 className="text-2xl font-bold text-t-text mt-1">$45,231.89</h4>
+                <div className="flex items-center gap-1.5 mt-2">
+                  <span className="text-xs font-bold text-t-good bg-t-good/10 px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                    +20.1%
+                  </span>
+                  <span className="text-xs text-t-textMuted">vs last month</span>
+                </div>
+              </div>
+              <div className={`p-2.5 rounded-lg bg-t-primary/10 text-t-primary group-hover:bg-t-primary group-hover:text-t-primaryFg transition-colors duration-300`}>
+                <DollarSign size={20} />
+              </div>
+            </div>
+            <div className="h-2 w-full bg-t-text/5 rounded-full overflow-hidden">
+               <div className="h-full bg-t-primary w-[70%] rounded-full" />
+            </div>
           </div>
 
-          {/* Card 2 - Profile Card */}
-          <div className={`bg-t-card ${bClass} ${rClass} p-6 ${sClass} flex flex-col items-center text-center transition-all duration-300 hover:${sClassHover} hover:-translate-y-1`}>
-             <div className={`w-16 h-16 ${rFull} bg-t-accent/15 mb-4 flex items-center justify-center text-t-accent transition-transform duration-300 hover:scale-110 hover:bg-t-accent hover:${fgOnColor}`}>
-                <User size={32} />
-             </div>
-             <h4 className="text-lg font-bold text-t-text">John Doe</h4>
-             <p className="text-t-textMuted text-sm mb-4">Product Designer</p>
-             <div className="flex gap-2">
-               <span className={`px-2 py-1 ${rClassInner} text-xs font-medium text-t-secondary bg-t-secondary/15 border border-t-secondary/30 hover:bg-t-secondary hover:text-t-textOnColor transition-colors cursor-default`}>UI/UX</span>
-               <span className={`px-2 py-1 ${rClassInner} text-xs font-medium text-t-accent bg-t-accent/15 border border-t-accent/30 hover:bg-t-accent hover:text-t-textOnColor transition-colors cursor-default`}>React</span>
-             </div>
-             <button className={`mt-4 w-full py-2 ${rClassInner} border border-t-primary/30 text-t-primary text-sm font-medium transition-all duration-300
-               hover:bg-t-primary hover:text-t-textOnColor hover:border-transparent
-               active:scale-95`}>
-               View Profile
-             </button>
+          {/* Profile Card */}
+          <div className={`bg-t-card p-6 ${rClass} ${bClass} ${sClass} transition-all duration-300 hover:-translate-y-1 hover:${sHoverSize} hover:${shadowOpacityClass} flex flex-col items-center text-center`}>
+            <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-t-primary to-t-accent mb-3 p-1">
+               <div className="w-full h-full rounded-full bg-t-card flex items-center justify-center">
+                  <User size={28} className="text-t-text" />
+               </div>
+            </div>
+            <h4 className="text-lg font-bold text-t-text">Alex Designer</h4>
+            <p className="text-sm text-t-textMuted mb-4">Product Designer</p>
+            <div className="flex gap-2 w-full">
+              <button className={`flex-1 ${primaryBg} py-2 ${rPill} text-sm font-medium ${sClass} hover:${sHoverSize} hover:${shadowOpacityClass}`}>Follow</button>
+              <button className={`flex-1 border border-t-text/20 py-2 ${rPill} text-sm font-medium hover:bg-t-text/5`}>Message</button>
+            </div>
           </div>
         </div>
       </section>
