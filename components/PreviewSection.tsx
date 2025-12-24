@@ -296,14 +296,32 @@ const PreviewSection: React.FC<PreviewProps> = ({ themeName, options }) => {
 
       <hr className={options.borderWidth > 0 ? 'border-t-text/20' : 'border-transparent'} />
 
-      <HeroBanner 
-        rClass={rClass} 
-        sClass={sClass} 
-        sClassHover={sClassHover}
-        themeName={themeName}
-        bClass={bClass}
-      />
+      <section className="space-y-6">
+       <h3 className="text-sm font-bold uppercase tracking-wider text-t-textMuted">Display Section</h3>
+       <div className={`relative w-full ${options.borderWidth > 0 ? '' : 'min-h-[400px]'} aspect-auto md:aspect-[16/9] ${rClass} ${sClass} overflow-hidden group transition-all duration-500 hover:shadow-2xl`}>
+          {/* Background Gradient/Image Sizzle */}
+          <div className={`absolute inset-0 bg-t-primary/5 group-hover:bg-t-primary/10 transition-colors duration-500`}></div>
+          <div className={`absolute -right-20 -top-20 w-96 h-96 bg-t-secondary/20 rounded-full blur-3xl group-hover:bg-t-secondary/30 transition-all duration-700`}></div>
+          <div className={`absolute -left-20 -bottom-20 w-96 h-96 bg-t-accent/20 rounded-full blur-3xl group-hover:bg-t-accent/30 transition-all duration-700`}></div>
+          
+          {/* Pattern Overlay */}
+          <div className="absolute inset-0 opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
 
+          <div className="absolute inset-0 flex flex-col justify-center items-center text-center p-8 md:p-12 z-10 transition-transform duration-500 group-hover:scale-105">
+             <span className={`inline-block px-3 py-1 mb-6 text-xs font-bold tracking-widest uppercase bg-t-secondary text-t-textOnColor ${rPill} shadow-lg`}>
+               Premium Experience
+             </span>
+             <h2 className="text-3xl sm:text-4xl md:text-5xl md:leading-tight font-black text-t-text mb-6 max-w-lg mx-auto drop-shadow-sm">
+               Design your <span className="text-t-primary italic">vision</span> <br className="hidden sm:block"/>
+               in <span className="text-t-secondary underline decoration-4 decoration-t-accent/30">color</span>.
+             </h2>
+             <p className="text-t-textMuted text-base sm:text-lg max-w-md mx-auto font-medium leading-relaxed">
+               Elevate your interface with harmonious palettes and perfectly balanced typography.
+             </p>
+          </div>
+       </div>
+    </section>
+      
       {/* Buttons & Actions - Shows: primary, secondary, accent, error, surface, text */}
       <section className="space-y-6">
         <h3 className="text-sm font-bold uppercase tracking-wider text-t-textMuted">Actions</h3>
