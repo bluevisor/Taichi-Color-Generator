@@ -14,9 +14,12 @@ Version: 25.12.2 Last Updated: 2025-12-27
 
 🧠 Core Design Upgrade: Palette Intelligence Engine
 
-New Core Principles 1.	All color computation happens in OKLCH 2.	Light mode is
-generated first 3.	Dark mode is derived deterministically from light mode
-4.	Every palette is scored, validated, and reproducible
+New Core Principles
+
+1. All color computation happens in OKLCH
+2. Light mode is generated first
+3. Dark mode is derived deterministically from light mode
+4. Every palette is scored, validated, and reproducible
 
 This replaces the prior ad-hoc RGB/HSL manipulation model.
 
