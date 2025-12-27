@@ -49,6 +49,7 @@ export interface DesignOptions {
   brightnessLevel: number; // -5 to 5, 0 is normal
   contrastLevel: number; // -5 to 5, 0 is normal
   saturationLevel: number; // -5 to 5, 0 is normal
+  darkFirst: boolean;    // Generate dark mode first, derive light from dark
 }
 
 export type LockedColors = Partial<Record<keyof ThemeTokens, boolean>>;

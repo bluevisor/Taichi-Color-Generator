@@ -96,7 +96,8 @@ const App: React.FC = () => {
     radius: 3,
     brightnessLevel: 0, 
     contrastLevel: 0, 
-    saturationLevel: 0 
+    saturationLevel: 0,
+    darkFirst: false
   });
   
   const [lockedColors, setLockedColors] = useState<LockedColors>({});
@@ -250,7 +251,7 @@ const App: React.FC = () => {
       generateNewTheme(currentTheme.mode, currentTheme.seed);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [designOptions.saturationLevel, designOptions.contrastLevel, designOptions.brightnessLevel]);
+  }, [designOptions.saturationLevel, designOptions.contrastLevel, designOptions.brightnessLevel, designOptions.darkFirst]);
 
   // Listen for system theme changes
   useEffect(() => {
@@ -276,7 +277,7 @@ const App: React.FC = () => {
     const cLevel = contrast !== undefined ? contrast : designOptions.contrastLevel;
     const bLevel = brightness !== undefined ? brightness : designOptions.brightnessLevel;
     
-    const { light, dark, seed: newSeed } = generateTheme(genMode, seed, sLevel, cLevel, bLevel, overridePalette);
+    const { light, dark, seed: newSeed } = generateTheme(genMode, seed, sLevel, cLevel, bLevel, overridePalette, designOptions.darkFirst);
     
     // Preserve locked colors from current theme
     // Also lock related tokens when a base token is locked
@@ -340,7 +341,7 @@ const App: React.FC = () => {
     // New items are always at index 0
     setHistoryIndex(0);
     setCurrentTheme(newTheme);
-  }, [historyIndex, designOptions.saturationLevel, designOptions.contrastLevel, designOptions.brightnessLevel, lockedColors, currentTheme]);
+  }, [historyIndex, designOptions.saturationLevel, designOptions.contrastLevel, designOptions.brightnessLevel, designOptions.darkFirst, lockedColors, currentTheme]);
 
   // Update a single token (manual edit)
   const handleTokenUpdate = useCallback((side: 'light' | 'dark', key: keyof ThemeTokens, value: string) => {
@@ -1035,6 +1036,23 @@ const App: React.FC = () => {
              <div className="flex justify-between text-[10px] opacity-40 px-0.5">
                <span>Soft</span><span>Max</span>
              </div>
+           </div>
+
+           {/* Dark First Toggle */}
+           <div className="space-y-2 flex flex-col justify-center">
+             <label className="flex items-center gap-2 cursor-pointer group">
+               <input 
+                 type="checkbox" 
+                 checked={designOptions.darkFirst}
+                 onChange={(e) => setDesignOptions(prev => ({ ...prev, darkFirst: e.target.checked }))}
+                 className="w-4 h-4 rounded cursor-pointer"
+                 style={{ accentColor: shellTheme.primary }}
+               />
+               <span className="text-xs font-bold uppercase tracking-wider opacity-70 group-hover:opacity-100 transition-opacity">
+                 Dark First
+               </span>
+             </label>
+             <p className="text-[10px] opacity-40">Generate dark theme first</p>
            </div>
         </div>
       )}

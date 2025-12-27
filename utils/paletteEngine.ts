@@ -443,6 +443,101 @@ function deriveDarkMode(light: ThemeTokens): ThemeTokens {
   };
 }
 
+// --- Light Mode Derivation (for dark-first generation) ---
+
+function deriveLightMode(dark: ThemeTokens): ThemeTokens {
+  const lightTargets = NEUTRAL_TARGETS.light;
+  
+  const darkBg = toOklch(dark.bg);
+  const darkCard = toOklch(dark.card);
+  const darkCard2 = toOklch(dark.card2);
+  const darkText = toOklch(dark.text);
+  const darkTextMuted = toOklch(dark.textMuted);
+  const darkPrimary = toOklch(dark.primary);
+  const darkSecondary = toOklch(dark.secondary);
+  const darkAccent = toOklch(dark.accent);
+  const darkBorder = toOklch(dark.border);
+  const darkGood = toOklch(dark.good);
+  const darkBad = toOklch(dark.bad);
+  const darkWarn = toOklch(dark.warn);
+  
+  // Neutral tokens with specific light targets
+  const lightBg = clampToSRGBGamut({ L: lightTargets.bg, C: darkBg.C * 0.5, H: darkBg.H });
+  const lightCard = clampToSRGBGamut({ L: lightTargets.card, C: darkCard.C * 0.5, H: darkCard.H });
+  const lightCard2 = clampToSRGBGamut({ L: lightTargets.card2, C: darkCard2.C * 0.5, H: darkCard2.H });
+  const lightText = clampToSRGBGamut({ L: lightTargets.text, C: darkText.C * 0.3, H: darkText.H });
+  const lightTextMuted = clampToSRGBGamut({ L: lightTargets.textMuted, C: darkTextMuted.C * 0.3, H: darkTextMuted.H });
+  const lightBorder = clampToSRGBGamut({ L: lightTargets.border, C: darkBorder.C * 0.5, H: darkBorder.H });
+  
+  // Brand colors - preserve hue, adjust lightness for light mode
+  const lightPrimary = clampToSRGBGamut({
+    L: Math.max(0.35, darkPrimary.L - 0.1),
+    C: darkPrimary.C * 1.1,
+    H: darkPrimary.H,
+  });
+  
+  const lightSecondary = clampToSRGBGamut({
+    L: Math.max(0.40, darkSecondary.L - 0.05),
+    C: darkSecondary.C * 1.15,
+    H: darkSecondary.H,
+  });
+  
+  const lightAccent = clampToSRGBGamut({
+    L: Math.max(0.30, darkAccent.L - 0.15),
+    C: darkAccent.C * 1.1,
+    H: darkAccent.H,
+  });
+  
+  // Status colors
+  const lightGood = clampToSRGBGamut({
+    L: darkGood.L - 0.05,
+    C: darkGood.C * 1.15,
+    H: darkGood.H,
+  });
+  
+  const lightBad = clampToSRGBGamut({
+    L: darkBad.L - 0.05,
+    C: darkBad.C * 1.15,
+    H: darkBad.H,
+  });
+  
+  const lightWarn = clampToSRGBGamut({
+    L: darkWarn.L,
+    C: darkWarn.C * 1.15,
+    H: darkWarn.H,
+  });
+  
+  // Ring token
+  const lightRing = clampToSRGBGamut({
+    L: 0.6,
+    C: darkPrimary.C * 1.2,
+    H: darkPrimary.H,
+  });
+  
+  return {
+    bg: toHex(lightBg),
+    card: toHex(lightCard),
+    card2: toHex(lightCard2),
+    text: toHex(lightText),
+    textMuted: toHex(lightTextMuted),
+    textOnColor: selectForegroundHex(toHex(lightPrimary)),
+    primary: toHex(lightPrimary),
+    primaryFg: selectForegroundHex(toHex(lightPrimary)),
+    secondary: toHex(lightSecondary),
+    secondaryFg: selectForegroundHex(toHex(lightSecondary)),
+    accent: toHex(lightAccent),
+    accentFg: selectForegroundHex(toHex(lightAccent)),
+    border: toHex(lightBorder),
+    ring: toHex(lightRing),
+    good: toHex(lightGood),
+    goodFg: selectForegroundHex(toHex(lightGood)),
+    warn: toHex(lightWarn),
+    warnFg: selectForegroundHex(toHex(lightWarn)),
+    bad: toHex(lightBad),
+    badFg: selectForegroundHex(toHex(lightBad)),
+  };
+}
+
 // --- Main Generation Function ---
 
 export interface PaletteResult {
@@ -532,7 +627,7 @@ export function generatePalette(
     badFg: toHex(status.badFg),
   };
   
-  // Step 5: Derive dark mode deterministically
+  // Step 5: Derive the other mode deterministically
   const dark = deriveDarkMode(light);
   
   // Step 6: Score and validate
@@ -561,6 +656,145 @@ export function generatePalette(
   };
 }
 
+// --- Dark-First Generation ---
+
+export function generatePaletteDarkFirst(
+  mode: GenerationMode,
+  seedColor?: string,
+  saturationLevel: number = 0,
+  contrastLevel: number = 0,
+  brightnessLevel: number = 0,
+  overridePalette?: string[]
+): PaletteResult {
+  // Initialize RNG
+  const rngSeed = seedColor || `${Date.now()}-${Math.random()}`;
+  const rng = new SeededRandom(rngSeed);
+  
+  // Determine base hue
+  let baseHue: number;
+  if (seedColor) {
+    baseHue = toOklch(seedColor).H;
+  } else if (overridePalette && overridePalette.length > 0 && overridePalette[0]) {
+    baseHue = toOklch(overridePalette[0]).H;
+  } else {
+    baseHue = rng.nextInt(0, 359);
+  }
+  
+  // Select harmony mode
+  let harmonyMode = mode;
+  if (mode === 'random') {
+    const modes: GenerationMode[] = [
+      'analogous', 'complementary', 'split-complementary', 
+      'triadic', 'tetradic', 'compound', 'triadic-split'
+    ];
+    harmonyMode = rng.pick(modes);
+  }
+  
+  const harmony = HARMONY_MODES[harmonyMode] || HARMONY_MODES.analogous;
+  const hues = harmony.offsets.map(offset => (baseHue + offset + 360) % 360);
+  
+  // Handle override palette
+  if (overridePalette && overridePalette.length === 5) {
+    for (let i = 0; i < 5; i++) {
+      if (overridePalette[i] && overridePalette[i] !== '') {
+        hues[i] = toOklch(overridePalette[i]).H;
+      }
+    }
+  }
+  
+  // Use dark neutral targets
+  const warmth = rng.nextFloat(-0.5, 0.5);
+  const darkTargets = NEUTRAL_TARGETS.dark;
+  
+  // Apply brightness/contrast/saturation for dark mode
+  const brightnessMod = brightnessLevel * 0.015;
+  const contrastMod = contrastLevel * 0.012;
+  const chromaMod = Math.max(0, saturationLevel * 0.003);
+  
+  // Build dark neutral foundation directly
+  const darkNeutrals = {
+    bg: clampToSRGBGamut({ L: Math.max(0.03, darkTargets.bg - brightnessMod), C: chromaMod * 0.5, H: warmth > 0 ? 60 : 240 }),
+    card: clampToSRGBGamut({ L: Math.max(0.06, darkTargets.card - brightnessMod * 0.8), C: chromaMod * 0.4, H: warmth > 0 ? 60 : 240 }),
+    card2: clampToSRGBGamut({ L: Math.max(0.09, darkTargets.card2 - brightnessMod * 0.6), C: chromaMod * 0.3, H: warmth > 0 ? 60 : 240 }),
+    text: clampToSRGBGamut({ L: Math.min(0.98, darkTargets.text + brightnessMod * 0.3), C: chromaMod * 0.1, H: baseHue }),
+    textMuted: clampToSRGBGamut({ L: Math.min(0.85, darkTargets.textMuted + brightnessMod * 0.2), C: chromaMod * 0.08, H: baseHue }),
+    border: clampToSRGBGamut({ L: Math.min(0.40, darkTargets.border - brightnessMod * 0.2), C: chromaMod * 0.2, H: warmth > 0 ? 60 : 240 }),
+  };
+  
+  // Build brand colors for dark mode (higher lightness for visibility)
+  const satNormalized = (saturationLevel + 5) / 10;
+  const baseC = 0.02 + satNormalized * 0.20;
+  const baseL = 0.58 + brightnessLevel * 0.02;
+  
+  const darkBrand = {
+    primary: clampToSRGBGamut({ L: baseL, C: baseC, H: hues[0] }),
+    secondary: clampToSRGBGamut({ L: baseL - 0.05, C: baseC * 0.8, H: hues[1] }),
+    accent: clampToSRGBGamut({ L: baseL + 0.05, C: baseC * 1.1, H: hues[2] }),
+  };
+  
+  // Status colors for dark
+  const statusC = 0.08 + satNormalized * 0.14;
+  const statusL = 0.55 + brightnessLevel * 0.02;
+  
+  const darkStatus = {
+    good: clampToSRGBGamut({ L: statusL, C: statusC, H: hues[3] }),
+    bad: clampToSRGBGamut({ L: statusL, C: statusC, H: hues[4] }),
+    warn: clampToSRGBGamut({ L: statusL + 0.1, C: statusC * 0.9, H: 60 }),
+  };
+  
+  // Assemble dark theme
+  const dark: ThemeTokens = {
+    bg: toHex(darkNeutrals.bg),
+    card: toHex(darkNeutrals.card),
+    card2: toHex(darkNeutrals.card2),
+    text: toHex(darkNeutrals.text),
+    textMuted: toHex(darkNeutrals.textMuted),
+    textOnColor: selectForegroundHex(toHex(darkBrand.primary)),
+    primary: toHex(darkBrand.primary),
+    primaryFg: selectForegroundHex(toHex(darkBrand.primary)),
+    secondary: toHex(darkBrand.secondary),
+    secondaryFg: selectForegroundHex(toHex(darkBrand.secondary)),
+    accent: toHex(darkBrand.accent),
+    accentFg: selectForegroundHex(toHex(darkBrand.accent)),
+    border: toHex(darkNeutrals.border),
+    ring: toHex(clampToSRGBGamut({ L: 0.5, C: darkBrand.primary.C * 0.8, H: darkBrand.primary.H })),
+    good: toHex(darkStatus.good),
+    goodFg: selectForegroundHex(toHex(darkStatus.good)),
+    warn: toHex(darkStatus.warn),
+    warnFg: selectForegroundHex(toHex(darkStatus.warn)),
+    bad: toHex(darkStatus.bad),
+    badFg: selectForegroundHex(toHex(darkStatus.bad)),
+  };
+  
+  // Derive light mode from dark
+  const light = deriveLightMode(dark);
+  
+  // Score based on dark mode
+  const scored = evaluatePalette(
+    {
+      bg: dark.bg,
+      card: dark.card,
+      text: dark.text,
+      textMuted: dark.textMuted,
+      primary: dark.primary,
+      secondary: dark.secondary,
+      accent: dark.accent,
+      good: dark.good,
+      bad: dark.bad,
+    },
+    baseHue
+  );
+  
+  return {
+    light,
+    dark,
+    seed: seedColor || toHex({ L: 0.5, C: 0.15, H: baseHue }),
+    baseHue,
+    mode: harmonyMode as GenerationMode,
+    score: scored.score.total,
+  };
+}
+
 // --- Legacy Compatibility ---
 
 export function generateTheme(
@@ -569,16 +803,12 @@ export function generateTheme(
   saturationLevel: number = 0,
   contrastLevel: number = 0,
   brightnessLevel: number = 0,
-  overridePalette?: string[]
+  overridePalette?: string[],
+  darkFirst: boolean = false
 ): { light: ThemeTokens; dark: ThemeTokens; seed: string } {
-  const result = generatePalette(
-    mode,
-    seedColor,
-    saturationLevel,
-    contrastLevel,
-    brightnessLevel,
-    overridePalette
-  );
+  const result = darkFirst
+    ? generatePaletteDarkFirst(mode, seedColor, saturationLevel, contrastLevel, brightnessLevel, overridePalette)
+    : generatePalette(mode, seedColor, saturationLevel, contrastLevel, brightnessLevel, overridePalette);
   
   return {
     light: result.light,
