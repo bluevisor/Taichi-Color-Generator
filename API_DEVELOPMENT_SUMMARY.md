@@ -41,18 +41,12 @@ simultaneously, ensuring visual parity for modern UI development.
 - Converts any theme object into developer formats.
 - Supports: **CSS, SCSS, LESS, Tailwind, and JSON**.
 
-### `/api/theme-history` (GET)
-
-- Placeholder for persistent storage.
-- Currently, history is handled via client-side `localStorage`.
-
 ## File Structure
 
 ```
 api/
 ├── generate-theme.ts   # Self-contained theme generator
 ├── export-theme.ts     # Multi-format exporter
-├── theme-history.ts    # Sync placeholder
 └── README.md           # Local dev guide
 ```
 
@@ -66,9 +60,8 @@ curl -X POST https://taichi.bucaastudio.com/api/generate-theme \
 
 ## Future Roadmap
 
-1. **Database Persistence:** Integrate Vercel KV for global theme syncing.
-2. **OKLCH Export:** Support `oklch()` CSS values for P3 wide gamut displays.
-3. **AI Integration:** Allow LLMs to refine generated themes via API.
+1. **OKLCH Export:** Support `oklch()` CSS values for P3 wide gamut displays.
+2. **AI Integration:** Allow LLMs to refine generated themes via API.
 
 ---
 

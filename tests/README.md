@@ -69,24 +69,13 @@ API_BASE_URL=http://localhost:3000/api npm run test:manual
 | Invalid format  | Rejects unknown format with `INVALID_FORMAT` |
 | Missing theme   | Rejects empty request with `INVALID_THEME`   |
 
-### 3. Theme History API (`/api/theme-history`)
-
-| Test Case          | Description                            |
-| ------------------ | -------------------------------------- |
-| Default pagination | Returns limit=10, offset=0             |
-| Custom limit       | Respects limit query param             |
-| Custom offset      | Respects offset query param            |
-| Max limit          | Caps limit at 50                       |
-| Rate limit headers | Includes X-RateLimit-* headers         |
-| Wrong HTTP method  | Rejects POST with `METHOD_NOT_ALLOWED` |
-
-### 4. CORS Support
+### 3. CORS Support
 
 | Test Case     | Description                                              |
 | ------------- | -------------------------------------------------------- |
 | All endpoints | Verify `Access-Control-Allow-Origin: *` on all endpoints |
 
-### 5. Integration Test
+### 4. Integration Test
 
 | Test Case     | Description                             |
 | ------------- | --------------------------------------- |

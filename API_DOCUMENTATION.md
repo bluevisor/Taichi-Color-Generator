@@ -166,17 +166,6 @@ Convert a theme object into developer-ready code formats.
 
 ---
 
-### 3. Theme History
-
-Retrieve previously generated themes (Coming Soon).
-
-**Endpoint:** `GET /api/theme-history`
-
-Currently, themes are stored locally in the browser's `localStorage`. This
-endpoint will eventually support cross-device synchronization.
-
----
-
 ## Error Codes
 
 | Code                  | Description                                      |

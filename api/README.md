@@ -7,15 +7,14 @@ Generator.
 
 ```
 api/
-├── generate-theme.ts    # Advanced OKLCH-based generation
+├── generate-theme.ts    # Self-contained theme generator
 ├── export-theme.ts      # Multi-format theme exporter
-├── theme-history.ts     # History placeholder
-└── utils/               # Internal API helpers
+└── README.md            # This file
 ```
 
 ## Key Features
 
-- **OKLCH Driven:** Programmatic access to the version 25.12.2 color engine.
+- **HSL Color Engine:** Fast, self-contained color harmony generation.
 - **Dual Support:** Every generation returns matching Light and Dark themes.
 - **Semantic Tokens:** Outputs 20 semantic tokens (bg, card, status, branding,
   etc.).
@@ -25,7 +24,6 @@ api/
 
 - **Generate Theme:** 10 requests/minute per IP
 - **Export Theme:** 15 requests/minute per IP
-- **Theme History:** 20 requests/minute per IP
 
 ## Testing Endpoints Locally
 

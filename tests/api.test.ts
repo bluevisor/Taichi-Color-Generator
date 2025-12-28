@@ -537,106 +537,14 @@ describe('API Test Suite', () => {
       expect(data.code).toBe('INVALID_THEME');
       
       await delay(DELAY_BETWEEN_TESTS);
-    });
   });
 
-  describe('3. Theme History API (/api/theme-history)', () => {
-    
-    it('should return empty history with pagination info', async () => {
-      const response = await apiRequest('/theme-history', {
-        method: 'GET',
-      });
-      
-      expect(response.status).toBe(200);
-      const data = await response.json();
-      
-      expect(data.success).toBe(true);
-      expect(data.themes).toEqual([]);
-      expect(data.pagination).toBeDefined();
-      expect(data.pagination.limit).toBe(10);
-      expect(data.pagination.offset).toBe(0);
-      expect(data.message).toContain('coming soon');
-      
-      await delay(DELAY_BETWEEN_TESTS);
-    });
-
-    it('should respect custom limit', async () => {
-      const response = await apiRequest('/theme-history?limit=20', {
-        method: 'GET',
-      });
-      
-      expect(response.status).toBe(200);
-      const data = await response.json();
-      
-      expect(data.success).toBe(true);
-      expect(data.pagination.limit).toBe(20);
-      
-      await delay(DELAY_BETWEEN_TESTS);
-    });
-
-    it('should respect custom offset', async () => {
-      const response = await apiRequest('/theme-history?offset=5', {
-        method: 'GET',
-      });
-      
-      expect(response.status).toBe(200);
-      const data = await response.json();
-      
-      expect(data.success).toBe(true);
-      expect(data.pagination.offset).toBe(5);
-      
-      await delay(DELAY_BETWEEN_TESTS);
-    });
-
-    it('should cap limit at 50', async () => {
-      const response = await apiRequest('/theme-history?limit=100', {
-        method: 'GET',
-      });
-      
-      expect(response.status).toBe(200);
-      const data = await response.json();
-      
-      expect(data.success).toBe(true);
-      expect(data.pagination.limit).toBe(50);
-      
-      await delay(DELAY_BETWEEN_TESTS);
-    });
-
-    it('should include rate limit headers', async () => {
-      const response = await apiRequest('/theme-history', {
-        method: 'GET',
-      });
-      
-      expect(response.status).toBe(200);
-      expect(response.headers.get('X-RateLimit-Limit')).toBe('20');
-      expect(response.headers.get('X-RateLimit-Remaining')).toBeDefined();
-      expect(response.headers.get('X-RateLimit-Reset')).toBeDefined();
-      
-      await delay(DELAY_BETWEEN_TESTS);
-    });
-
-    it('should reject POST method', async () => {
-      const response = await apiRequest('/theme-history', {
-        method: 'POST',
-      });
-      
-      expect(response.status).toBe(405);
-      const data = await response.json();
-      
-      expect(data.success).toBe(false);
-      expect(data.code).toBe('METHOD_NOT_ALLOWED');
-      
-      await delay(DELAY_BETWEEN_TESTS);
-    });
-  });
-
-  describe('4. CORS Support', () => {
+  describe('3. CORS Support', () => {
     
     it('should include CORS headers on all endpoints', async () => {
       const endpoints = [
         { path: '/generate-theme', method: 'POST', body: JSON.stringify({ style: 'random' }) },
         { path: '/export-theme', method: 'POST', body: JSON.stringify({ theme: { primary: '#000' }, format: 'json' }) },
-        { path: '/theme-history', method: 'GET' },
       ];
       
       for (const endpoint of endpoints) {
@@ -653,7 +561,7 @@ describe('API Test Suite', () => {
     });
   });
 
-  describe('5. Integration Test - Complete Workflow', () => {
+  describe('4. Integration Test - Complete Workflow', () => {
     
     it('should complete full workflow: generate -> export -> verify', async () => {
       // Step 1: Generate a theme

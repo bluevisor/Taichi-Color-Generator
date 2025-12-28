@@ -74,26 +74,6 @@ POST /api/export-theme
 
 ---
 
-### 3. Theme History
-
-```
-GET /api/theme-history
-```
-
-**Response:**
-
-```json
-{
-    "success": true,
-    "themes": [],
-    "message": "Coming soon. Stored locally for now."
-}
-```
-
-**Rate Limit:** 20 requests/minute
-
----
-
 ## Harmony Styles (`style`)
 
 - `monochrome`

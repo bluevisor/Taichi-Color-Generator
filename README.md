@@ -202,7 +202,6 @@ const { light, dark, metadata } = await response.json();
 - **POST /api/generate-theme** - Generate balanced light/dark themes (10
   req/min)
 - **POST /api/export-theme** - Export themes in multiple formats (15 req/min)
-- **GET /api/theme-history** - Retrieve theme history (20 req/min)
 
 ### Documentation
 

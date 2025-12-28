@@ -380,73 +380,10 @@ async function testExportTheme() {
   await delay(500);
 }
 
-async function testThemeHistory() {
-  logSection('3. Testing Theme History API');
-
-  // Test 1: Default pagination
-  logInfo('Test 3.1: Get history with default pagination');
-  const response1 = await apiRequest('/theme-history', {
-    method: 'GET',
-  });
-
-  if (response1 && response1.status === 200) {
-    const data = await response1.json();
-    if (data.success && data.pagination && data.pagination.limit === 10) {
-      logSuccess('Theme history retrieved with default pagination');
-      logInfo(`  Limit: ${data.pagination.limit}, Offset: ${data.pagination.offset}`);
-    } else {
-      logError('Invalid history response');
-    }
-  } else {
-    logError(`Failed with status: ${response1?.status}`);
-  }
-
-  await delay(500);
-
-  // Test 2: Custom limit
-  logInfo('Test 3.2: Get history with custom limit');
-  const response2 = await apiRequest('/theme-history?limit=20', {
-    method: 'GET',
-  });
-
-  if (response2 && response2.status === 200) {
-    const data = await response2.json();
-    if (data.pagination.limit === 20) {
-      logSuccess('Custom limit applied correctly');
-    } else {
-      logError('Custom limit not applied');
-    }
-  } else {
-    logError(`Failed with status: ${response2?.status}`);
-  }
-
-  await delay(500);
-
-  // Test 3: Rate limit headers
-  logInfo('Test 3.3: Check rate limit headers');
-  const response3 = await apiRequest('/theme-history', {
-    method: 'GET',
-  });
-
-  if (response3) {
-    const rateLimitHeader = response3.headers.get('X-RateLimit-Limit');
-    const remainingHeader = response3.headers.get('X-RateLimit-Remaining');
-    
-    if (rateLimitHeader && remainingHeader) {
-      logSuccess('Rate limit headers present');
-      logInfo(`  Limit: ${rateLimitHeader}, Remaining: ${remainingHeader}`);
-    } else {
-      logError('Rate limit headers missing');
-    }
-  }
-
-  await delay(500);
-}
-
 async function testCORS() {
-  logSection('4. Testing CORS Support');
+  logSection('3. Testing CORS Support');
 
-  logInfo('Test 4.1: Check CORS headers on generate-theme');
+  logInfo('Test 3.1: Check CORS headers on generate-theme');
   const response = await apiRequest('/generate-theme', {
     method: 'OPTIONS',
   });
@@ -470,7 +407,7 @@ async function testCORS() {
 }
 
 async function testIntegration() {
-  logSection('5. Integration Test - Complete Workflow');
+  logSection('4. Integration Test - Complete Workflow');
 
   logInfo('Step 1: Generate a triadic theme');
   const generateResponse = await apiRequest('/generate-theme', {
@@ -558,7 +495,6 @@ async function runAllTests() {
   try {
     await testGenerateTheme();
     await testExportTheme();
-    await testThemeHistory();
     await testCORS();
     await testIntegration();
     
