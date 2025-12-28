@@ -127,6 +127,7 @@ GET /api/theme-history
 - `INVALID_BASE_COLOR`: Invalid hex
 - `INVALID_THEME`: Broken object structure
 - `INVALID_FORMAT`: Format not supported
+- `INTERNAL_ERROR`: Server error
 
 ---
 

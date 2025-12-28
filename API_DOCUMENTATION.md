@@ -3,9 +3,8 @@
 ## Overview
 
 The Taichi Theme Generator API provides endpoints for generating, managing, and
-exporting balanced dual-theme color palettes. Built on the **OKLCH Palette
-Intelligence Engine (v25.12.2)**, it ensures perceptual accuracy and
-accessibility across both light and dark modes.
+exporting balanced dual-theme color palettes. It uses color harmony theory to
+ensure aesthetic consistency across both light and dark modes.
 
 **Base URL:** `https://taichi.bucaastudio.com/api`
 
@@ -189,6 +188,7 @@ endpoint will eventually support cross-device synchronization.
 | `INVALID_BASE_COLOR`  | Invalid hex color format                         |
 | `INVALID_THEME`       | Invalid theme object structure for export        |
 | `INVALID_FORMAT`      | Export format not supported                      |
+| `INTERNAL_ERROR`      | Server error occurred during processing          |
 
 ---
 

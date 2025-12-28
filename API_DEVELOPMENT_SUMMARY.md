@@ -1,84 +1,75 @@
-# API Development Branch - Summary
+# API Development Summary
 
-## Branch: `api-development`
-
-**Last Updated:** December 28, 2025 (Upgrade to OKLCH Engine v25.12.2)
+**Last Updated:** December 28, 2025
 
 ## Overview
 
-The Taichi Theme Generator API provides programmatic access to a powerful,
-perceptually-uniform color generation engine. All endpoints are optimized for
-Vercel's free tier with robust rate limiting and are designed to be
-LLM-friendly.
+The Taichi Theme Generator API provides programmatic access to balanced color
+theme generation. All endpoints are self-contained serverless functions
+optimized for Vercel's free tier with robust rate limiting.
 
-## Recent Upgrades (v25.12.2)
+## Key Features
 
-The API has been fully synchronized with the core application's **OKLCH Palette
-Intelligence Engine**, adding several key features:
+### 1. Dual-Theme Response
 
-### 1. Advanced Generation Parameters
+Every request to `/api/generate-theme` returns both **Light and Dark themes**
+simultaneously, ensuring visual parity for modern UI development.
 
-- **Saturation (-5 to 5):** Control brand vibrancy from grayscale to vivid.
-- **Contrast (-5 to 5):** Fine-tune readability and visual depth.
-- **Brightness (-5 to 5):** Global shift of the theme foundation.
+### 2. Advanced Generation Parameters
 
-### 2. Dual-Theme Response
+- **Saturation (-5 to 5):** Control vibrancy from grayscale to vivid.
+- **Contrast (-5 to 5):** Fine-tune readability and depth.
+- **Brightness (-5 to 5):** Global lightness shift for the foundation.
 
-- Every request to `/api/generate-theme` now returns both **balanced Light and
-  Dark themes** simultaneously, ensuring perfect parity for modern UI
-  development.
+### 3. Harmony Modes
 
-### 3. Expanded Harmony Modes
+9 color harmony styles supported:
 
-Supported styles expanded from 4 basic modes to 9 advanced harmonies:
-
-- `monochrome`, `analogous`, `complementary`, `split-complementary`, `triadic`,
-  `tetradic`, `compound`, `triadic-split`, and `random`.
+- `monochrome`, `analogous`, `complementary`, `split-complementary`,
+- `triadic`, `tetradic`, `compound`, `triadic-split`, `random`
 
 ## Available Endpoints
 
 ### `/api/generate-theme` (POST)
 
-- Uses the OKLCH engine to generate perceptually accurate palettes.
-- Returns 20 semantic tokens per theme (bg, card, primary, secondary, status
-  colors, etc.).
-- Includes metadata with philosophical context for the selected harmony.
+- Generates balanced Light and Dark themes using color harmony theory.
+- Returns 20 semantic tokens per theme (bg, card, primary, status colors, etc.).
+- Includes metadata with philosophical context.
 
 ### `/api/export-theme` (POST)
 
-- Converts any valid theme object into developer formats.
+- Converts any theme object into developer formats.
 - Supports: **CSS, SCSS, LESS, Tailwind, and JSON**.
-- Customizable prefix and automatic kebab-case token naming.
 
 ### `/api/theme-history` (GET)
 
 - Placeholder for persistent storage.
-- Currently, persistent history is handled via client-side `localStorage`.
+- Currently, history is handled via client-side `localStorage`.
 
 ## File Structure
 
 ```
-Taichi-Theme-Generator/
-├── api/
-│   ├── generate-theme.ts       # Now using paletteEngine.ts
-│   ├── export-theme.ts         # Generic exporter for any theme object
-│   └── theme-history.ts        # Sync placeholder
-├── utils/
-│   ├── paletteEngine.ts        # The core OKLCH generation logic
-│   ├── oklch.ts                # Perceptually uniform color math
-│   └── contrast.ts             # WCAG AA/AAA validation
-├── API_DOCUMENTATION.md        # Updated for Engine v25.12.2
-└── API_QUICK_REFERENCE.md      # Refreshed examples
+api/
+├── generate-theme.ts   # Self-contained theme generator
+├── export-theme.ts     # Multi-format exporter
+├── theme-history.ts    # Sync placeholder
+└── README.md           # Local dev guide
+```
+
+## Testing
+
+```bash
+curl -X POST https://taichi.bucaastudio.com/api/generate-theme \
+  -H "Content-Type: application/json" \
+  -d '{"style":"analogous","baseColor":"#3B82F6","saturation":2}'
 ```
 
 ## Future Roadmap
 
 1. **Database Persistence:** Integrate Vercel KV for global theme syncing.
-2. **AI Refinement:** Allow LLMs to provide feedback on generated themes via
-   API.
-3. **P3 Wide Gamut:** Support exporting `oklch()` values directly for modern
-   displays.
+2. **OKLCH Export:** Support `oklch()` CSS values for P3 wide gamut displays.
+3. **AI Integration:** Allow LLMs to refine generated themes via API.
 
 ---
 
-**Status:** ✅ Engine Synchronized **Version:** `v25.12.2`
+**Status:** ✅ Live and Functional
