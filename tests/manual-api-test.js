@@ -9,7 +9,7 @@
  * Or make it executable and run: ./tests/manual-api-test.js
  */
 
-const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3000/api';
+const API_BASE_URL = process.env.API_BASE_URL || 'https://taichi.bucaastudio.com/api';
 
 // Colors for terminal output
 const colors = {
@@ -74,12 +74,25 @@ async function apiRequest(endpoint, options = {}) {
   }
 }
 
+// Expected tokens
+const EXPECTED_TOKENS = [
+  'bg', 'card', 'card2', 'text', 'textMuted', 'textOnColor',
+  'primary', 'primaryFg', 'secondary', 'secondaryFg', 'accent', 'accentFg',
+  'border', 'ring', 'good', 'goodFg', 'warn', 'warnFg', 'bad', 'badFg'
+];
+
+// Valid styles
+const VALID_STYLES = [
+  'monochrome', 'analogous', 'complementary', 'split-complementary',
+  'triadic', 'tetradic', 'compound', 'triadic-split', 'random'
+];
+
 // Test functions
 async function testGenerateTheme() {
   logSection('1. Testing Generate Theme API');
 
-  // Test 1: Random theme
-  logInfo('Test 1.1: Generate random theme');
+  // Test 1: Random theme with dual response
+  logInfo('Test 1.1: Generate random theme (light + dark)');
   const response1 = await apiRequest('/generate-theme', {
     method: 'POST',
     body: JSON.stringify({ style: 'random' }),
@@ -87,100 +100,113 @@ async function testGenerateTheme() {
 
   if (response1 && response1.status === 200) {
     const data = await response1.json();
-    if (data.success && data.theme && data.metadata) {
-      logSuccess('Random theme generated successfully');
-      logInfo(`  Philosophy: ${data.metadata.philosophy.substring(0, 50)}...`);
+    if (data.success && data.light && data.dark && data.metadata) {
+      const hasAllTokens = EXPECTED_TOKENS.every(token => 
+        data.light[token] && data.dark[token]
+      );
+      if (hasAllTokens) {
+        logSuccess('Random theme generated with 20 tokens each');
+        logInfo(`  Style: ${data.metadata.style}`);
+        logInfo(`  Philosophy: ${data.metadata.philosophy.substring(0, 50)}...`);
+      } else {
+        logError('Missing tokens in response');
+      }
     } else {
-      logError('Invalid response structure');
+      logError('Invalid response structure (expected light, dark, metadata)');
     }
   } else {
     logError(`Failed with status: ${response1?.status}`);
   }
 
-  await delay(1000);
+  await delay(500);
 
-  // Test 2: Yin-Yang theme
-  logInfo('Test 1.2: Generate yin-yang theme');
+  // Test 2: Analogous theme
+  logInfo('Test 1.2: Generate analogous theme');
   const response2 = await apiRequest('/generate-theme', {
     method: 'POST',
-    body: JSON.stringify({ style: 'yin-yang' }),
+    body: JSON.stringify({ style: 'analogous' }),
   });
 
   if (response2 && response2.status === 200) {
     const data = await response2.json();
-    if (data.success && data.metadata.style === 'yin-yang') {
-      logSuccess('Yin-Yang theme generated successfully');
+    if (data.success && data.metadata.style === 'analogous') {
+      logSuccess('Analogous theme generated successfully');
     } else {
-      logError('Invalid yin-yang theme response');
+      logError('Invalid analogous theme response');
     }
   } else {
     logError(`Failed with status: ${response2?.status}`);
   }
 
-  await delay(1000);
+  await delay(500);
 
-  // Test 3: Five Elements theme
-  logInfo('Test 1.3: Generate five-elements theme');
+  // Test 3: Triadic theme
+  logInfo('Test 1.3: Generate triadic theme');
   const response3 = await apiRequest('/generate-theme', {
     method: 'POST',
-    body: JSON.stringify({ style: 'five-elements' }),
+    body: JSON.stringify({ style: 'triadic' }),
   });
 
   if (response3 && response3.status === 200) {
     const data = await response3.json();
-    if (data.success && data.metadata.style === 'five-elements') {
-      logSuccess('Five Elements theme generated successfully');
+    if (data.success && data.metadata.style === 'triadic') {
+      logSuccess('Triadic theme generated successfully');
     } else {
-      logError('Invalid five-elements theme response');
+      logError('Invalid triadic theme response');
     }
   } else {
     logError(`Failed with status: ${response3?.status}`);
   }
 
-  await delay(1000);
+  await delay(500);
 
-  // Test 4: Bagua theme
-  logInfo('Test 1.4: Generate bagua theme');
+  // Test 4: Theme with base color
+  logInfo('Test 1.4: Generate theme with base color');
   const response4 = await apiRequest('/generate-theme', {
     method: 'POST',
-    body: JSON.stringify({ style: 'bagua' }),
+    body: JSON.stringify({ 
+      style: 'complementary',
+      baseColor: '#3B82F6'
+    }),
   });
 
   if (response4 && response4.status === 200) {
     const data = await response4.json();
-    if (data.success && data.metadata.style === 'bagua') {
-      logSuccess('Bagua theme generated successfully');
+    if (data.success && data.metadata.seed === '#3B82F6') {
+      logSuccess('Theme with base color generated successfully');
     } else {
-      logError('Invalid bagua theme response');
+      logError('Base color not reflected in seed');
     }
   } else {
     logError(`Failed with status: ${response4?.status}`);
   }
 
-  await delay(1000);
+  await delay(500);
 
-  // Test 5: Theme with base color
-  logInfo('Test 1.5: Generate theme with base color');
+  // Test 5: With saturation, contrast, brightness
+  logInfo('Test 1.5: Generate theme with saturation/contrast/brightness');
   const response5 = await apiRequest('/generate-theme', {
     method: 'POST',
     body: JSON.stringify({ 
-      style: 'random',
-      baseColor: '#3B82F6'
+      style: 'analogous',
+      saturation: 3,
+      contrast: 2,
+      brightness: -1
     }),
   });
 
   if (response5 && response5.status === 200) {
     const data = await response5.json();
-    if (data.success && data.theme) {
-      logSuccess('Theme with base color generated successfully');
+    if (data.success && data.light && data.dark) {
+      logSuccess('Theme with parameters generated successfully');
     } else {
-      logError('Invalid theme with base color response');
+      logError('Invalid theme response');
     }
   } else {
     logError(`Failed with status: ${response5?.status}`);
   }
 
-  await delay(1000);
+  await delay(500);
 
   // Test 6: Invalid style
   logInfo('Test 1.6: Test invalid style (should fail)');
@@ -200,7 +226,7 @@ async function testGenerateTheme() {
     logError(`Expected 400, got: ${response6?.status}`);
   }
 
-  await delay(1000);
+  await delay(500);
 
   // Test 7: Invalid base color
   logInfo('Test 1.7: Test invalid base color (should fail)');
@@ -223,21 +249,56 @@ async function testGenerateTheme() {
     logError(`Expected 400, got: ${response7?.status}`);
   }
 
-  await delay(1000);
+  await delay(500);
+
+  // Test 8: Invalid parameters
+  logInfo('Test 1.8: Test out-of-range saturation (should fail)');
+  const response8 = await apiRequest('/generate-theme', {
+    method: 'POST',
+    body: JSON.stringify({ 
+      style: 'random',
+      saturation: 10  // Out of -5 to 5 range
+    }),
+  });
+
+  if (response8 && response8.status === 400) {
+    const data = await response8.json();
+    if (data.code === 'INVALID_PARAMETERS') {
+      logSuccess('Out-of-range parameter correctly rejected');
+    } else {
+      logError('Wrong error code for invalid parameters');
+    }
+  } else {
+    logError(`Expected 400, got: ${response8?.status}`);
+  }
+
+  await delay(500);
 }
 
 async function testExportTheme() {
   logSection('2. Testing Export Theme API');
 
   const sampleTheme = {
-    primary: 'hsl(210, 75%, 55%)',
-    secondary: 'hsl(45, 80%, 60%)',
-    accent: 'hsl(330, 70%, 50%)',
-    background: 'hsl(0, 0%, 95%)',
-    surface: 'hsl(0, 0%, 98%)',
-    text: 'hsl(0, 0%, 15%)',
-    textSecondary: 'hsl(0, 0%, 45%)',
-    border: 'hsl(0, 0%, 85%)'
+    bg: '#F8FAFC',
+    card: '#F1F5F9',
+    card2: '#E2E8F0',
+    text: '#0F172A',
+    textMuted: '#475569',
+    textOnColor: '#FFFFFF',
+    primary: '#3B82F6',
+    primaryFg: '#FFFFFF',
+    secondary: '#6366F1',
+    secondaryFg: '#FFFFFF',
+    accent: '#F43F5E',
+    accentFg: '#FFFFFF',
+    border: '#CBD5E1',
+    ring: '#3B82F6',
+    good: '#10B981',
+    goodFg: '#FFFFFF',
+    warn: '#F59E0B',
+    warnFg: '#000000',
+    bad: '#EF4444',
+    badFg: '#FFFFFF'
   };
 
   const formats = ['css', 'scss', 'less', 'tailwind', 'json'];
@@ -266,7 +327,7 @@ async function testExportTheme() {
       logError(`Failed to export as ${format}, status: ${response?.status}`);
     }
 
-    await delay(1000);
+    await delay(500);
   }
 
   // Test custom prefix
@@ -293,7 +354,7 @@ async function testExportTheme() {
     logError(`Failed with status: ${response?.status}`);
   }
 
-  await delay(1000);
+  await delay(500);
 
   // Test invalid format
   logInfo('Test 2.7: Test invalid format (should fail)');
@@ -316,7 +377,7 @@ async function testExportTheme() {
     logError(`Expected 400, got: ${response2?.status}`);
   }
 
-  await delay(1000);
+  await delay(500);
 }
 
 async function testThemeHistory() {
@@ -340,7 +401,7 @@ async function testThemeHistory() {
     logError(`Failed with status: ${response1?.status}`);
   }
 
-  await delay(1000);
+  await delay(500);
 
   // Test 2: Custom limit
   logInfo('Test 3.2: Get history with custom limit');
@@ -359,7 +420,7 @@ async function testThemeHistory() {
     logError(`Failed with status: ${response2?.status}`);
   }
 
-  await delay(1000);
+  await delay(500);
 
   // Test 3: Rate limit headers
   logInfo('Test 3.3: Check rate limit headers');
@@ -379,7 +440,7 @@ async function testThemeHistory() {
     }
   }
 
-  await delay(1000);
+  await delay(500);
 }
 
 async function testCORS() {
@@ -405,18 +466,19 @@ async function testCORS() {
     logError(`OPTIONS request failed with status: ${response?.status}`);
   }
 
-  await delay(1000);
+  await delay(500);
 }
 
 async function testIntegration() {
   logSection('5. Integration Test - Complete Workflow');
 
-  logInfo('Step 1: Generate a yin-yang theme');
+  logInfo('Step 1: Generate a triadic theme');
   const generateResponse = await apiRequest('/generate-theme', {
     method: 'POST',
     body: JSON.stringify({ 
-      style: 'yin-yang',
-      baseColor: '#3B82F6'
+      style: 'triadic',
+      baseColor: '#3B82F6',
+      saturation: 2
     }),
   });
 
@@ -425,17 +487,19 @@ async function testIntegration() {
     return;
   }
 
-  const { theme, metadata } = await generateResponse.json();
+  const { light, dark, metadata } = await generateResponse.json();
   logSuccess('Theme generated');
   logInfo(`  Style: ${metadata.style}`);
+  logInfo(`  Light primary: ${light.primary}`);
+  logInfo(`  Dark primary: ${dark.primary}`);
 
-  await delay(1000);
+  await delay(500);
 
-  logInfo('Step 2: Export theme as CSS');
+  logInfo('Step 2: Export light theme as CSS');
   const exportResponse = await apiRequest('/export-theme', {
     method: 'POST',
     body: JSON.stringify({ 
-      theme,
+      theme: light,
       format: 'css',
       options: {
         prefix: 'integration-test',
@@ -454,10 +518,11 @@ async function testIntegration() {
   logInfo(`  Filename: ${filename}`);
   logInfo(`  Content preview: ${content.substring(0, 100)}...`);
 
-  await delay(1000);
+  await delay(500);
 
   logInfo('Step 3: Verify exported content');
   if (content.includes('--integration-test-primary') && 
+      content.includes('--integration-test-bg') &&
       content.includes(':root {') &&
       content.includes('}')) {
     logSuccess('Exported content is valid CSS');
