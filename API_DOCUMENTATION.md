@@ -3,10 +3,11 @@
 ## Overview
 
 The Taichi Theme Generator API provides endpoints for generating, managing, and
-exporting Taichi-inspired color themes. All endpoints are rate-limited to ensure
-fair usage on Vercel's free tier.
+exporting balanced dual-theme color palettes. Built on the **OKLCH Palette
+Intelligence Engine (v25.12.2)**, it ensures perceptual accuracy and
+accessibility across both light and dark modes.
 
-**Base URL:** `https://your-domain.vercel.app/api`
+**Base URL:** `https://taichi.bucaastudio.com/api`
 
 ## Rate Limits
 
@@ -30,7 +31,7 @@ Currently, no authentication is required. All endpoints are publicly accessible.
 
 ### 1. Generate Theme
 
-Generate a Taichi-inspired color theme based on philosophical styles.
+Generate a pair of balanced Light and Dark themes based on color harmony rules.
 
 **Endpoint:** `POST /api/generate-theme`
 
@@ -40,98 +41,101 @@ Generate a Taichi-inspired color theme based on philosophical styles.
 
 ```json
 {
-  "style": "yin-yang" | "five-elements" | "bagua" | "random",
-  "baseColor": "#FF5733",  // Optional: hex color
-  "lockedColors": ["primary", "accent"]  // Optional: preserve specific colors
+    "style": "random", // Optional: harmony mode
+    "baseColor": "#3B82F6", // Optional: hex color to seed the palette
+    "saturation": 0, // Optional: -5 to 5 (grayscale to vivid)
+    "contrast": 0, // Optional: -5 to 5 (soft to high contrast)
+    "brightness": 0 // Optional: -5 to 5 (darker to lighter)
 }
 ```
 
 #### Parameters
 
-| Parameter      | Type     | Required | Description                                                                                        |
-| -------------- | -------- | -------- | -------------------------------------------------------------------------------------------------- |
-| `style`        | string   | No       | Theme generation style. Options: `yin-yang`, `five-elements`, `bagua`, `random`. Default: `random` |
-| `baseColor`    | string   | No       | Base color in hex format (e.g., `#FF5733`) to influence the palette                                |
-| `lockedColors` | string[] | No       | Array of color token names to preserve from previous generation                                    |
+| Parameter    | Type   | Default  | Range    | Description                                        |
+| ------------ | ------ | -------- | -------- | -------------------------------------------------- |
+| `style`      | string | `random` | See list | Color harmony mode (e.g., `analogous`, `triadic`). |
+| `baseColor`  | string | random   | Hex      | Influence the primary hue of the palette.          |
+| `saturation` | number | `0`      | -5 to 5  | Global saturation adjustment for all colors.       |
+| `contrast`   | number | `0`      | -5 to 5  | Distance between background and text/tokens.       |
+| `brightness` | number | `0`      | -5 to 5  | Global lightness shift for the foundation.         |
 
 #### Response
+
+Returns both `light` and `dark` theme variants.
 
 ```json
 {
     "success": true,
-    "theme": {
-        "primary": "hsl(210, 75%, 55%)",
-        "secondary": "hsl(45, 80%, 60%)",
-        "accent": "hsl(330, 70%, 50%)",
-        "background": "hsl(0, 0%, 95%)",
-        "surface": "hsl(0, 0%, 98%)",
-        "text": "hsl(0, 0%, 15%)",
-        "textSecondary": "hsl(0, 0%, 45%)",
-        "border": "hsl(0, 0%, 85%)"
+    "light": {
+        "bg": "#F8FAFC",
+        "card": "#F1F5F9",
+        "card2": "#E2E8F0",
+        "text": "#0F172A",
+        "textMuted": "#475569",
+        "textOnColor": "#FFFFFF",
+        "primary": "#3B82F6",
+        "primaryFg": "#FFFFFF",
+        "secondary": "#6366F1",
+        "secondaryFg": "#FFFFFF",
+        "accent": "#F43F5E",
+        "accentFg": "#FFFFFF",
+        "border": "#CBD5E1",
+        "ring": "#3B82F6",
+        "good": "#10B981",
+        "goodFg": "#FFFFFF",
+        "warn": "#F59E0B",
+        "warnFg": "#000000",
+        "bad": "#EF4444",
+        "badFg": "#FFFFFF"
+    },
+    "dark": {
+        "bg": "#0F172A",
+        "card": "#1E293B",
+        "card2": "#334155",
+        "text": "#F8FAFC",
+        "textMuted": "#94A3B8",
+        "textOnColor": "#FFFFFF",
+        "primary": "#60A5FA",
+        "primaryFg": "#000000",
+        "secondary": "#818CF8",
+        "secondaryFg": "#000000",
+        "accent": "#FB7185",
+        "accentFg": "#000000",
+        "border": "#334155",
+        "ring": "#60A5FA",
+        "good": "#34D399",
+        "goodFg": "#000000",
+        "warn": "#FBBF24",
+        "warnFg": "#000000",
+        "bad": "#F87171",
+        "badFg": "#000000"
     },
     "metadata": {
-        "style": "yin-yang",
+        "style": "analogous",
+        "seed": "#3B82F6",
         "timestamp": 1703376000000,
-        "philosophy": "Balance of opposites - light and dark, active and passive, creating harmony through contrast."
+        "philosophy": "Harmony found in nature by choosing neighboring colors on the wheel."
     }
 }
 ```
 
-#### Error Response
+#### Style Options (`style`)
 
-```json
-{
-    "success": false,
-    "error": "Invalid style. Must be one of: yin-yang, five-elements, bagua, random",
-    "code": "INVALID_STYLE"
-}
-```
-
-#### Style Descriptions
-
-- **yin-yang:** Creates balanced themes with contrasting light and dark elements
-- **five-elements:** Based on Wood, Fire, Earth, Metal, and Water - uses
-  traditional element colors
-- **bagua:** Uses the eight trigram directions for varied, harmonious palettes
-- **random:** Completely random but harmonious color generation
-
-#### Example Usage
-
-```javascript
-// Using fetch
-const response = await fetch(
-    "https://your-domain.vercel.app/api/generate-theme",
-    {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            style: "yin-yang",
-            baseColor: "#3B82F6",
-        }),
-    },
-);
-
-const data = await response.json();
-console.log(data.theme);
-```
-
-```bash
-# Using curl
-curl -X POST https://your-domain.vercel.app/api/generate-theme \
-  -H "Content-Type: application/json" \
-  -d '{
-    "style": "five-elements",
-    "baseColor": "#10B981"
-  }'
-```
+- **random:** Pick a random harmony mode.
+- **monochrome:** Variations of a single hue.
+- **analogous:** Colors adjacent on the hue wheel.
+- **complementary:** Opposing colors for high contrast.
+- **split-complementary:** Two colors adjacent to the complement.
+- **triadic:** Three equally spaced hues.
+- **tetradic:** Double-complementary (four colors).
+- **compound:** A mix of complementary and analogous values.
+- **triadic-split:** Complex harmony for broad design systems.
 
 ---
 
 ### 2. Export Theme
 
-Export a theme in various formats (CSS, SCSS, LESS, Tailwind, JSON).
+Convert a theme object into developer-ready code formats.
 
 **Endpoint:** `POST /api/export-theme`
 
@@ -141,32 +145,14 @@ Export a theme in various formats (CSS, SCSS, LESS, Tailwind, JSON).
 
 ```json
 {
-    "theme": {
-        "primary": "hsl(210, 75%, 55%)",
-        "secondary": "hsl(45, 80%, 60%)",
-        "accent": "hsl(330, 70%, 50%)",
-        "background": "hsl(0, 0%, 95%)",
-        "surface": "hsl(0, 0%, 98%)",
-        "text": "hsl(0, 0%, 15%)",
-        "textSecondary": "hsl(0, 0%, 45%)",
-        "border": "hsl(0, 0%, 85%)"
-    },
-    "format": "css", // Options: css, scss, less, tailwind, json
+    "theme": { "bg": "#F8FAFC", "primary": "#3B82F6", ... },
+    "format": "css", // css, scss, less, tailwind, json
     "options": {
-        "prefix": "taichi", // Optional, default: "taichi"
-        "includeComments": true // Optional, default: true
+        "prefix": "taichi",
+        "includeComments": true
     }
 }
 ```
-
-#### Parameters
-
-| Parameter                 | Type    | Required | Description                                                                       |
-| ------------------------- | ------- | -------- | --------------------------------------------------------------------------------- |
-| `theme`                   | object  | Yes      | Theme object with color tokens                                                    |
-| `format`                  | string  | No       | Export format. Options: `css`, `scss`, `less`, `tailwind`, `json`. Default: `css` |
-| `options.prefix`          | string  | No       | Variable prefix for CSS/SCSS/LESS. Default: `taichi`                              |
-| `options.includeComments` | boolean | No       | Include helpful comments in output. Default: `true`                               |
 
 #### Response
 
@@ -174,209 +160,45 @@ Export a theme in various formats (CSS, SCSS, LESS, Tailwind, JSON).
 {
     "success": true,
     "format": "css",
-    "content": ":root {\n  --taichi-primary: hsl(210, 75%, 55%);\n  ...\n}",
+    "content": ":root {\n  --taichi-bg: #F8FAFC;\n  --taichi-primary: #3B82F6;\n  ...\n}",
     "filename": "taichi-theme.css"
 }
-```
-
-#### Example Usage
-
-```javascript
-// Export as CSS
-const response = await fetch(
-    "https://your-domain.vercel.app/api/export-theme",
-    {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            theme: myTheme,
-            format: "css",
-            options: {
-                prefix: "my-app",
-                includeComments: true,
-            },
-        }),
-    },
-);
-
-const { content, filename } = await response.json();
-
-// Download the file
-const blob = new Blob([content], { type: "text/css" });
-const url = URL.createObjectURL(blob);
-const a = document.createElement("a");
-a.href = url;
-a.download = filename;
-a.click();
-```
-
-#### Format Examples
-
-**CSS:**
-
-```css
-:root {
-    --taichi-primary: hsl(210, 75%, 55%);
-    --taichi-secondary: hsl(45, 80%, 60%);
-    /* ... */
-}
-```
-
-**SCSS:**
-
-```scss
-$taichi-primary: hsl(210, 75%, 55%);
-$taichi-secondary: hsl(45, 80%, 60%);
-// ...
-```
-
-**Tailwind:**
-
-```javascript
-module.exports = {
-    theme: {
-        extend: {
-            colors: {
-                taichi: {
-                    "primary": "hsl(210, 75%, 55%)",
-                    "secondary": "hsl(45, 80%, 60%)",
-                    // ...
-                },
-            },
-        },
-    },
-};
 ```
 
 ---
 
 ### 3. Theme History
 
-Retrieve previously generated themes (placeholder for future implementation).
+Retrieve previously generated themes (Coming Soon).
 
 **Endpoint:** `GET /api/theme-history`
 
-**Rate Limit:** 20 requests/minute
-
-#### Query Parameters
-
-| Parameter | Type   | Required | Description                                         |
-| --------- | ------ | -------- | --------------------------------------------------- |
-| `limit`   | number | No       | Number of themes to retrieve (max: 50). Default: 10 |
-| `offset`  | number | No       | Pagination offset. Default: 0                       |
-
-#### Response
-
-```json
-{
-    "success": true,
-    "themes": [],
-    "pagination": {
-        "limit": 10,
-        "offset": 0,
-        "total": 0
-    },
-    "message": "Theme history feature coming soon. Themes are currently stored locally in your browser."
-}
-```
-
-#### Example Usage
-
-```javascript
-const response = await fetch(
-    "https://your-domain.vercel.app/api/theme-history?limit=20&offset=0",
-);
-const data = await response.json();
-```
+Currently, themes are stored locally in the browser's `localStorage`. This
+endpoint will eventually support cross-device synchronization.
 
 ---
 
 ## Error Codes
 
-| Code                  | Description                                   |
-| --------------------- | --------------------------------------------- |
-| `METHOD_NOT_ALLOWED`  | Wrong HTTP method used                        |
-| `RATE_LIMIT_EXCEEDED` | Too many requests, retry after specified time |
-| `INVALID_STYLE`       | Invalid theme generation style                |
-| `INVALID_BASE_COLOR`  | Invalid hex color format                      |
-| `INVALID_THEME`       | Invalid theme object structure                |
-| `INVALID_FORMAT`      | Invalid export format                         |
-| `INTERNAL_ERROR`      | Server error occurred                         |
+| Code                  | Description                                      |
+| --------------------- | ------------------------------------------------ |
+| `METHOD_NOT_ALLOWED`  | Wrong HTTP method used (use POST for generation) |
+| `RATE_LIMIT_EXCEEDED` | Too many requests, check `retryAfter`            |
+| `INVALID_STYLE`       | Style name not recognized                        |
+| `INVALID_PARAMETERS`  | Saturation/Contrast/Brightness out of range      |
+| `INVALID_BASE_COLOR`  | Invalid hex color format                         |
+| `INVALID_THEME`       | Invalid theme object structure for export        |
+| `INVALID_FORMAT`      | Export format not supported                      |
 
 ---
 
-## LLM Integration Guide
+## Integration Best Practices
 
-These APIs are designed to be LLM-friendly with clear, structured responses and
-comprehensive documentation.
+1. **Dual-Theme Awareness:** Always use the `light` and `dark` variants together
+   to ensure your UI remains balanced when users switch modes.
+2. **Handle 429s:** Implement exponential backoff for the 10 req/min limit.
+3. **Use OKLCH for CSS:** When possible, export in JSON and use `oklch()` in
+   your CSS for best results on modern displays (P3 wide gamut).
 
-### Example LLM Prompt
-
-```
-Generate a Taichi-inspired color theme using the five-elements style with a blue base color.
-Then export it as a Tailwind configuration.
-```
-
-### Example LLM Implementation
-
-```javascript
-// Step 1: Generate theme
-const generateResponse = await fetch(
-    "https://your-domain.vercel.app/api/generate-theme",
-    {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            style: "five-elements",
-            baseColor: "#3B82F6",
-        }),
-    },
-);
-
-const { theme, metadata } = await generateResponse.json();
-
-// Step 2: Export as Tailwind
-const exportResponse = await fetch(
-    "https://your-domain.vercel.app/api/export-theme",
-    {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            theme,
-            format: "tailwind",
-        }),
-    },
-);
-
-const { content } = await exportResponse.json();
-console.log(content);
-```
-
----
-
-## CORS
-
-All endpoints support CORS and can be called from any origin. Preflight
-`OPTIONS` requests are handled automatically.
-
----
-
-## Best Practices
-
-1. **Respect Rate Limits:** Implement exponential backoff when receiving 429
-   responses
-2. **Cache Responses:** Cache theme generations client-side to reduce API calls
-3. **Handle Errors:** Always check the `success` field and handle error codes
-   appropriately
-4. **Use Appropriate Formats:** Choose the export format that matches your tech
-   stack
-5. **Provide Feedback:** Use the `philosophy` field from metadata to explain
-   themes to users
-
----
-
-## Support
-
-For issues or questions, please open an issue on the GitHub repository.
+For support, please open an issue on
+[GitHub](https://github.com/BucaaStudio/Taichi-Theme-Generator).

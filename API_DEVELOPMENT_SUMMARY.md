@@ -2,236 +2,83 @@
 
 ## Branch: `api-development`
 
-Created: December 23, 2025
+**Last Updated:** December 28, 2025 (Upgrade to OKLCH Engine v25.12.2)
 
 ## Overview
 
-This branch adds comprehensive REST API endpoints to the Taichi Theme Generator,
-enabling programmatic access to theme generation and export functionality. All
-endpoints are optimized for Vercel's free tier with appropriate rate limiting.
+The Taichi Theme Generator API provides programmatic access to a powerful,
+perceptually-uniform color generation engine. All endpoints are optimized for
+Vercel's free tier with robust rate limiting and are designed to be
+LLM-friendly.
 
-## What Was Added
+## Recent Upgrades (v25.12.2)
 
-### 1. API Endpoints
+The API has been fully synchronized with the core application's **OKLCH Palette
+Intelligence Engine**, adding several key features:
 
-#### `/api/generate-theme.ts`
+### 1. Advanced Generation Parameters
 
-- **Method:** POST
-- **Rate Limit:** 10 requests/minute per IP
-- **Features:**
-  - 4 Taichi-inspired generation styles:
-    - `yin-yang` - Balanced light/dark contrast
-    - `five-elements` - Wood, Fire, Earth, Metal, Water
-    - `bagua` - Eight trigram directions
-    - `random` - Harmonious random generation
-  - Optional base color input (hex format)
-  - Color locking support for preserving specific tokens
-  - Returns 8 color tokens + metadata with philosophy description
+- **Saturation (-5 to 5):** Control brand vibrancy from grayscale to vivid.
+- **Contrast (-5 to 5):** Fine-tune readability and visual depth.
+- **Brightness (-5 to 5):** Global shift of the theme foundation.
 
-#### `/api/export-theme.ts`
+### 2. Dual-Theme Response
 
-- **Method:** POST
-- **Rate Limit:** 15 requests/minute per IP
-- **Features:**
-  - Export themes in 5 formats:
-    - CSS (custom properties)
-    - SCSS (variables)
-    - LESS (variables)
-    - Tailwind (config)
-    - JSON (raw data)
-  - Customizable variable prefix
-  - Optional comments and usage examples
-  - Returns formatted content ready for download
+- Every request to `/api/generate-theme` now returns both **balanced Light and
+  Dark themes** simultaneously, ensuring perfect parity for modern UI
+  development.
 
-#### `/api/theme-history.ts`
+### 3. Expanded Harmony Modes
 
-- **Method:** GET
-- **Rate Limit:** 20 requests/minute per IP
-- **Status:** Placeholder for future database integration
-- **Features:**
-  - Pagination support (limit/offset)
-  - Currently returns empty array with helpful message
-  - Structure ready for database implementation
+Supported styles expanded from 4 basic modes to 9 advanced harmonies:
 
-### 2. Utilities
+- `monochrome`, `analogous`, `complementary`, `split-complementary`, `triadic`,
+  `tetradic`, `compound`, `triadic-split`, and `random`.
 
-#### `/api/utils/rate-limit.ts`
+## Available Endpoints
 
-- In-memory rate limiting optimized for serverless
-- IP-based tracking using Vercel's forwarded headers
-- Automatic cleanup to prevent memory leaks
-- Configurable limits and time windows
-- Returns retry-after time when limited
+### `/api/generate-theme` (POST)
 
-### 3. Client Integration
+- Uses the OKLCH engine to generate perceptually accurate palettes.
+- Returns 20 semantic tokens per theme (bg, card, primary, secondary, status
+  colors, etc.).
+- Includes metadata with philosophical context for the selected harmony.
 
-#### `/utils/api-client.ts`
+### `/api/export-theme` (POST)
 
-- TypeScript client with full type safety
-- Helper functions for all endpoints:
-  - `generateTheme()` - Generate themes with error handling
-  - `exportTheme()` - Export with format selection
-  - `downloadThemeFile()` - Browser download utility
-  - `getRateLimitMessage()` - User-friendly error messages
-- Complete usage examples included
+- Converts any valid theme object into developer formats.
+- Supports: **CSS, SCSS, LESS, Tailwind, and JSON**.
+- Customizable prefix and automatic kebab-case token naming.
 
-### 4. Documentation
+### `/api/theme-history` (GET)
 
-#### `API_DOCUMENTATION.md` (Comprehensive)
-
-- Complete API reference
-- Request/response examples
-- Error codes and handling
-- LLM integration guide
-- CORS information
-- Best practices
-
-#### `API_QUICK_REFERENCE.md` (Quick Lookup)
-
-- Concise endpoint summaries
-- Quick start code snippets
-- Rate limit overview
-- Error code table
-
-#### `api/README.md` (Development Guide)
-
-- Local testing instructions
-- Deployment information
-- Future enhancement ideas
-
-#### Updated `README.md`
-
-- Added API features to main feature list
-- New API Documentation section
-- Quick start example
-- Links to all API docs
-
-## Rate Limiting Strategy
-
-Optimized for Vercel's free tier limits:
-
-| Endpoint       | Limit  | Reasoning                              |
-| -------------- | ------ | -------------------------------------- |
-| Generate Theme | 10/min | Most resource-intensive operation      |
-| Export Theme   | 15/min | Moderate processing, format conversion |
-| Theme History  | 20/min | Lightweight read operation             |
-
-## LLM-Friendly Design
-
-All APIs are designed for easy LLM integration:
-
-1. **Clear Documentation:** Comprehensive examples and descriptions
-2. **Structured Responses:** Consistent JSON format with success flags
-3. **Descriptive Errors:** Specific error codes and messages
-4. **Philosophy Metadata:** Contextual information about each style
-5. **Usage Examples:** Ready-to-use code snippets
+- Placeholder for persistent storage.
+- Currently, persistent history is handled via client-side `localStorage`.
 
 ## File Structure
 
 ```
 Taichi-Theme-Generator/
 ├── api/
-│   ├── generate-theme.ts       # Theme generation endpoint
-│   ├── export-theme.ts         # Theme export endpoint
-│   ├── theme-history.ts        # History endpoint (placeholder)
-│   ├── utils/
-│   │   └── rate-limit.ts       # Rate limiting utility
-│   └── README.md               # API development guide
+│   ├── generate-theme.ts       # Now using paletteEngine.ts
+│   ├── export-theme.ts         # Generic exporter for any theme object
+│   └── theme-history.ts        # Sync placeholder
 ├── utils/
-│   └── api-client.ts           # TypeScript client utilities
-├── API_DOCUMENTATION.md        # Complete API reference
-├── API_QUICK_REFERENCE.md      # Quick lookup guide
-├── README.md                   # Updated with API section
-└── package.json                # Added @vercel/node dependency
+│   ├── paletteEngine.ts        # The core OKLCH generation logic
+│   ├── oklch.ts                # Perceptually uniform color math
+│   └── contrast.ts             # WCAG AA/AAA validation
+├── API_DOCUMENTATION.md        # Updated for Engine v25.12.2
+└── API_QUICK_REFERENCE.md      # Refreshed examples
 ```
 
-## Dependencies Added
+## Future Roadmap
 
-- `@vercel/node@^3.0.21` - TypeScript types for Vercel serverless functions
-
-## Commits
-
-1. **feat: add basic API endpoints with rate limiting**
-   - Added all three API endpoints
-   - Implemented rate limiting utility
-   - Added comprehensive documentation
-   - Updated package.json
-
-2. **docs: add API client utilities and update README**
-   - Added TypeScript API client
-   - Added quick reference guide
-   - Updated main README with API section
-
-## Next Steps
-
-### To Deploy:
-
-```bash
-# Push the branch to remote
-git push -u origin api-development
-
-# Deploy to Vercel (will auto-deploy if connected)
-# Or merge to main for production deployment
-```
-
-### To Test Locally:
-
-```bash
-# Install Vercel CLI if needed
-npm install -g vercel
-
-# Run local development server
-vercel dev
-
-# Test endpoints at http://localhost:3000/api/*
-```
-
-### Future Enhancements:
-
-1. **Database Integration**
-   - Add Vercel KV or PostgreSQL for theme history
-   - Implement user sessions/accounts
-   - Store theme analytics
-
-2. **Advanced Features**
-   - AI-powered theme suggestions
-   - Color accessibility scoring
-   - Theme recommendations based on brand colors
-   - Batch theme generation
-
-3. **Rate Limiting Improvements**
-   - Use Vercel KV for distributed rate limiting
-   - Implement API key authentication
-   - Add premium tier with higher limits
-
-4. **Analytics**
-   - Track popular styles
-   - Monitor API usage
-   - Identify common color combinations
-
-## Testing Checklist
-
-- [ ] Test generate-theme with all 4 styles
-- [ ] Test export-theme with all 5 formats
-- [ ] Verify rate limiting works correctly
-- [ ] Test CORS from different origins
-- [ ] Verify error handling and messages
-- [ ] Test with invalid inputs
-- [ ] Check rate limit headers
-- [ ] Verify TypeScript types compile
-- [ ] Test API client utilities
-- [ ] Verify documentation accuracy
-
-## Notes
-
-- All endpoints support CORS from any origin
-- Rate limiting uses in-memory storage (resets on cold starts)
-- For production, consider upgrading to Vercel KV for persistent rate limiting
-- API is fully functional but theme-history needs database implementation
-- All code is TypeScript with full type safety
-- Documentation is comprehensive and LLM-optimized
+1. **Database Persistence:** Integrate Vercel KV for global theme syncing.
+2. **AI Refinement:** Allow LLMs to provide feedback on generated themes via
+   API.
+3. **P3 Wide Gamut:** Support exporting `oklch()` values directly for modern
+   displays.
 
 ---
 
-**Status:** ✅ Ready for testing and deployment **Branch:** `api-development`
-**Base:** `main`
+**Status:** ✅ Engine Synchronized **Version:** `v25.12.2`

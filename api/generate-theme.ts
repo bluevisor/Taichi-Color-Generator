@@ -1,4 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { generatePalette } from '../utils/paletteEngine';
+import { GenerationMode } from '../types';
 
 // Inline rate limiting implementation
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
@@ -33,57 +35,7 @@ async function rateLimit(req: VercelRequest, max: number, windowMs: number) {
 /**
  * API Endpoint: Generate Theme
  * 
- * Generates a Taichi-inspired color theme based on the provided parameters.
- * 
- * Rate Limit: 10 requests per minute per IP (safe for Vercel free tier)
- * 
- * Request Body (JSON):
- * {
- *   "style": "random" | "monochrome" | "analogous" | "complementary" | "split-complementary" | "triadic" | "tetradic" | "compound" | "triadic-split",
- *   "baseColor": string (optional, hex color like "#FF5733"),
- *   "lockedColors": string[] (optional, array of color token names to preserve)
- * }
- * 
- * Response (JSON):
- * {
- *   "success": true,
- *   "theme": {
- *   "theme": {
- *     "bg": string,
- *     "card": string,
- *     "card2": string,
- *     "text": string,
- *     "textMuted": string,
- *     "textOnColor": string,
- *     "primary": string,
- *     "primaryFg": string,
- *     "secondary": string,
- *     "secondaryFg": string,
- *     "accent": string,
- *     "accentFg": string,
- *     "border": string,
- *     "ring": string,
- *     "good": string,
- *     "goodFg": string,
- *     "warn": string,
- *     "warnFg": string,
- *     "bad": string,
- *     "badFg": string
- *   },
- *   },
- *   "metadata": {
- *     "style": string,
- *     "timestamp": number,
- *     "philosophy": string
- *   }
- * }
- * 
- * Error Response:
- * {
- *   "success": false,
- *   "error": string,
- *   "code": string
- * }
+ * Generates balanced Light & Dark themes using the OKLCH Palette Engine.
  */
 export default async function handler(
   req: VercelRequest,
@@ -124,18 +76,36 @@ export default async function handler(
   }
 
   try {
-    const { style = 'random', baseColor, lockedColors = [] } = req.body || {};
+    const { 
+      style = 'random', 
+      baseColor, 
+      lockedColors = [],
+      saturation = 0,
+      contrast = 0,
+      brightness = 0
+    } = req.body || {};
 
     // Validate style parameter
     const validStyles = [
       'monochrome', 'analogous', 'complementary', 'split-complementary', 
       'triadic', 'tetradic', 'compound', 'triadic-split', 'random'
     ];
+    
     if (!validStyles.includes(style)) {
       return res.status(400).json({
         success: false,
         error: `Invalid style. Must be one of: ${validStyles.join(', ')}`,
         code: 'INVALID_STYLE'
+      });
+    }
+
+    // Validate numeric parameters
+    const checkRange = (val: any) => typeof val === 'number' && val >= -5 && val <= 5;
+    if (!checkRange(saturation) || !checkRange(contrast) || !checkRange(brightness)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Parameters saturation, contrast, and brightness must be numbers between -5 and 5.',
+        code: 'INVALID_PARAMETERS'
       });
     }
 
@@ -148,17 +118,24 @@ export default async function handler(
       });
     }
 
-    // Generate theme based on style
-    const theme = generateTheme(style, baseColor, lockedColors);
-    const philosophy = getPhilosophy(style);
+    // Generate theme using the Advanced OKLCH Engine
+    const result = generatePalette(
+      style as GenerationMode, 
+      baseColor, 
+      saturation, 
+      contrast, 
+      brightness
+    );
 
     return res.status(200).json({
       success: true,
-      theme,
+      light: result.light,
+      dark: result.dark,
       metadata: {
-        style,
+        style: result.mode,
+        seed: result.seed,
         timestamp: Date.now(),
-        philosophy: philosophy || 'Balanced and harmonious design tokens.'
+        philosophy: getPhilosophy(result.mode)
       }
     });
 
@@ -172,126 +149,20 @@ export default async function handler(
   }
 }
 
-// Helper function to generate theme colors
-function generateTheme(
-  style: string,
-  baseColor?: string,
-  lockedColors: string[] = []
-): Record<string, string> {
-  const theme: Record<string, string> = {};
-  const colorTokens = [
-    'bg', 'card', 'card2', 'text', 'textMuted', 'textOnColor',
-    'primary', 'primaryFg', 'secondary', 'secondaryFg', 'accent', 'accentFg',
-    'border', 'ring', 'good', 'goodFg', 'warn', 'warnFg', 'bad', 'badFg'
-  ];
-
-  // Generate colors based on style
-  colorTokens.forEach(token => {
-    if (lockedColors.includes(token)) {
-      // Keep locked colors unchanged (would need to be passed in request)
-      return;
-    }
-
-    switch (style) {
-      case 'yin-yang':
-        theme[token] = generateYinYangColor(token, baseColor);
-        break;
-      case 'five-elements':
-        theme[token] = generateFiveElementsColor(token, baseColor);
-        break;
-      case 'bagua':
-        theme[token] = generateBaguaColor(token, baseColor);
-        break;
-      default:
-        theme[token] = generateRandomColor(token, baseColor);
-    }
-  });
-
-  return theme;
-}
-
-// Yin-Yang style: Balance of light and dark
-function generateYinYangColor(token: string, baseColor?: string): string {
-  const isDark = ['text', 'textSecondary'].includes(token);
-  const isLight = ['background', 'card'].includes(token);
-  
-  if (isDark) {
-    return `hsl(${Math.random() * 360}, ${10 + Math.random() * 20}%, ${10 + Math.random() * 15}%)`;
-  } else if (isLight) {
-    return `hsl(${Math.random() * 360}, ${10 + Math.random() * 20}%, ${85 + Math.random() * 10}%)`;
-  } else {
-    const hue = baseColor ? hexToHsl(baseColor).h : Math.random() * 360;
-    return `hsl(${hue}, ${60 + Math.random() * 30}%, ${45 + Math.random() * 20}%)`;
-  }
-}
-
-// Five Elements style: Wood, Fire, Earth, Metal, Water
-function generateFiveElementsColor(token: string, baseColor?: string): string {
-  const elements = {
-    wood: { hue: 120, sat: 50, light: 45 },   // Green
-    fire: { hue: 0, sat: 80, light: 50 },     // Red
-    earth: { hue: 40, sat: 50, light: 50 },   // Yellow/Brown
-    metal: { hue: 0, sat: 0, light: 70 },     // White/Gray
-    water: { hue: 210, sat: 70, light: 40 }   // Blue
-  };
-  
-  const elementKeys = Object.keys(elements);
-  const element = elements[elementKeys[Math.floor(Math.random() * elementKeys.length)] as keyof typeof elements];
-  
-  return `hsl(${element.hue + (Math.random() - 0.5) * 30}, ${element.sat + (Math.random() - 0.5) * 20}%, ${element.light + (Math.random() - 0.5) * 20}%)`;
-}
-
-// Bagua style: Eight trigrams with varied colors
-function generateBaguaColor(token: string, baseColor?: string): string {
-  const bagua = [0, 45, 90, 135, 180, 225, 270, 315]; // 8 directions
-  const hue = bagua[Math.floor(Math.random() * bagua.length)];
-  const sat = 50 + Math.random() * 40;
-  const light = 40 + Math.random() * 30;
-  
-  return `hsl(${hue}, ${sat}%, ${light}%)`;
-}
-
-// Random style: Completely random colors
-function generateRandomColor(token: string, baseColor?: string): string {
-  const hue = baseColor ? hexToHsl(baseColor).h + (Math.random() - 0.5) * 60 : Math.random() * 360;
-  const sat = 40 + Math.random() * 50;
-  const light = 35 + Math.random() * 40;
-  
-  return `hsl(${hue}, ${sat}%, ${light}%)`;
-}
-
-// Helper to convert hex to HSL
-function hexToHsl(hex: string): { h: number; s: number; l: number } {
-  const r = parseInt(hex.slice(1, 3), 16) / 255;
-  const g = parseInt(hex.slice(3, 5), 16) / 255;
-  const b = parseInt(hex.slice(5, 7), 16) / 255;
-
-  const max = Math.max(r, g, b);
-  const min = Math.min(r, g, b);
-  let h = 0, s = 0, l = (max + min) / 2;
-
-  if (max !== min) {
-    const d = max - min;
-    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-    
-    switch (max) {
-      case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
-      case g: h = ((b - r) / d + 2) / 6; break;
-      case b: h = ((r - g) / d + 4) / 6; break;
-    }
-  }
-
-  return { h: h * 360, s: s * 100, l: l * 100 };
-}
-
 // Get philosophy description for each style
 function getPhilosophy(style: string): string {
   const philosophies: Record<string, string> = {
-    'yin-yang': 'Balance of opposites - light and dark, active and passive, creating harmony through contrast.',
-    'five-elements': 'Wood, Fire, Earth, Metal, and Water - the five fundamental elements that create and control each other in endless cycles.',
-    'bagua': 'Eight trigrams representing the fundamental principles of reality, each with unique energy and meaning.',
+    'monochrome': 'Unity and simplicity through variations of a single hue.',
+    'analogous': 'Harmony found in nature by choosing neighboring colors on the wheel.',
+    'complementary': 'High-energy contrast by pairing opposites for maximum impact.',
+    'split-complementary': 'Visual variety with less tension than a direct complement.',
+    'triadic': 'A vibrant, balanced triangle of color for a bold UI.',
+    'tetradic': 'Rich and complex harmony using four colors in two complementary pairs.',
+    'compound': 'Balanced sophistication using multiple contrasting and adjacent hues.',
+    'triadic-split': 'A wide, dynamic palette for complex design systems.',
     'random': 'Embracing spontaneity and the natural flow of creative energy.'
   };
   
   return philosophies[style] || philosophies.random;
 }
+

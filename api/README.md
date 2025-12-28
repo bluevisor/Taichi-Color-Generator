@@ -1,92 +1,66 @@
 # API Directory
 
-This directory contains Vercel serverless functions for the Taichi Color
+This directory contains Vercel serverless functions for the Taichi Theme
 Generator.
 
 ## Structure
 
 ```
 api/
-├── generate-theme.ts    # Main theme generation endpoint
-├── export-theme.ts      # Theme export in multiple formats
-├── theme-history.ts     # Theme history (placeholder)
-└── utils/
-    └── rate-limit.ts    # Rate limiting utility
+├── generate-theme.ts    # Advanced OKLCH-based generation
+├── export-theme.ts      # Multi-format theme exporter
+├── theme-history.ts     # History placeholder
+└── utils/               # Internal API helpers
 ```
 
-## Rate Limiting
+## Key Features
 
-All endpoints are rate-limited to ensure stability on Vercel's free tier:
+- **OKLCH Driven:** Programmatic access to the version 25.12.2 color engine.
+- **Dual Support:** Every generation returns matching Light and Dark themes.
+- **Semantic Tokens:** Outputs 20 semantic tokens (bg, card, status, branding,
+  etc.).
+- **Format Support:** Export to CSS, SCSS, LESS, Tailwind, and JSON.
+
+## Rate Limiting
 
 - **Generate Theme:** 10 requests/minute per IP
 - **Export Theme:** 15 requests/minute per IP
 - **Theme History:** 20 requests/minute per IP
 
-The rate limiting is implemented using an in-memory store that resets on cold
-starts, which is acceptable for basic protection.
+## Testing Endpoints Locally
 
-## Development
-
-### Local Testing
-
-To test the API endpoints locally, you can use Vercel CLI:
+Start the Vercel dev server:
 
 ```bash
-# Install Vercel CLI globally (if not already installed)
-npm install -g vercel
-
-# Run the development server
 vercel dev
 ```
 
-This will start a local server that mimics the Vercel environment.
-
-### Testing Endpoints
+### Example: Generate dual-themes
 
 ```bash
-# Test generate-theme endpoint
 curl -X POST http://localhost:3000/api/generate-theme \
   -H "Content-Type: application/json" \
-  -d '{"style": "yin-yang", "baseColor": "#3B82F6"}'
+  -d '{
+    "style": "analogous", 
+    "baseColor": "#3B82F6",
+    "saturation": 2,
+    "contrast": 1
+  }'
+```
 
-# Test export-theme endpoint
+### Example: Export to CSS
+
+```bash
 curl -X POST http://localhost:3000/api/export-theme \
   -H "Content-Type: application/json" \
   -d '{
-    "theme": {
-      "primary": "hsl(210, 75%, 55%)",
-      "secondary": "hsl(45, 80%, 60%)",
-      "accent": "hsl(330, 70%, 50%)",
-      "background": "hsl(0, 0%, 95%)",
-      "surface": "hsl(0, 0%, 98%)",
-      "text": "hsl(0, 0%, 15%)",
-      "textSecondary": "hsl(0, 0%, 45%)",
-      "border": "hsl(0, 0%, 85%)"
-    },
-    "format": "css"
+    "theme": { "primary": "#3B82F6", "bg": "#F8FAFC" },
+    "format": "css",
+    "options": { "prefix": "my-app" }
   }'
-
-# Test theme-history endpoint
-curl http://localhost:3000/api/theme-history?limit=10
 ```
-
-## Deployment
-
-These functions are automatically deployed when you push to Vercel. No
-additional configuration is needed.
-
-## Future Enhancements
-
-1. **Database Integration:** Add persistent storage for theme history using
-   Vercel KV or PostgreSQL
-2. **User Authentication:** Implement user accounts and API keys
-3. **Advanced Rate Limiting:** Use Vercel KV for distributed rate limiting
-   across edge functions
-4. **Analytics:** Track popular styles and color combinations
-5. **AI Integration:** Use AI to suggest complementary colors or generate themes
-   from descriptions
 
 ## Documentation
 
-See [API_DOCUMENTATION.md](../API_DOCUMENTATION.md) for complete API reference
-and usage examples.
+For the full API reference, request/response schemas, and LLM integration guide,
+see [API_DOCUMENTATION.md](../API_DOCUMENTATION.md).

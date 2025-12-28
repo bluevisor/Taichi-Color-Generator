@@ -12,9 +12,11 @@ POST /api/generate-theme
 
 ```json
 {
-    "style": "yin-yang",
+    "style": "random",
     "baseColor": "#3B82F6",
-    "lockedColors": ["primary"]
+    "saturation": 0,
+    "contrast": 0,
+    "brightness": 0
 }
 ```
 
@@ -23,11 +25,13 @@ POST /api/generate-theme
 ```json
 {
     "success": true,
-    "theme": {/* 8 color tokens */},
+    "light": {/* 20 tokens */},
+    "dark": {/* 20 tokens */},
     "metadata": {
-        "style": "yin-yang",
+        "style": "analogous",
+        "seed": "#3B82F6",
         "timestamp": 1703376000000,
-        "philosophy": "Balance of opposites..."
+        "philosophy": "..."
     }
 }
 ```
@@ -73,7 +77,7 @@ POST /api/export-theme
 ### 3. Theme History
 
 ```
-GET /api/theme-history?limit=10&offset=0
+GET /api/theme-history
 ```
 
 **Response:**
@@ -82,8 +86,7 @@ GET /api/theme-history?limit=10&offset=0
 {
     "success": true,
     "themes": [],
-    "pagination": { "limit": 10, "offset": 0, "total": 0 },
-    "message": "Coming soon..."
+    "message": "Coming soon. Stored locally for now."
 }
 ```
 
@@ -91,12 +94,17 @@ GET /api/theme-history?limit=10&offset=0
 
 ---
 
-## Styles
+## Harmony Styles (`style`)
 
-- `yin-yang` - Balanced light/dark contrast
-- `five-elements` - Wood, Fire, Earth, Metal, Water
-- `bagua` - Eight trigram directions
-- `random` - Harmonious random colors
+- `monochrome`
+- `analogous`
+- `complementary`
+- `split-complementary`
+- `triadic`
+- `tetradic`
+- `compound`
+- `triadic-split`
+- `random`
 
 ---
 
@@ -112,60 +120,41 @@ GET /api/theme-history?limit=10&offset=0
 
 ## Error Codes
 
-| Code                  | Meaning                 |
-| --------------------- | ----------------------- |
-| `METHOD_NOT_ALLOWED`  | Wrong HTTP method       |
-| `RATE_LIMIT_EXCEEDED` | Too many requests       |
-| `INVALID_STYLE`       | Invalid style parameter |
-| `INVALID_BASE_COLOR`  | Invalid hex color       |
-| `INVALID_THEME`       | Invalid theme object    |
-| `INVALID_FORMAT`      | Invalid export format   |
-| `INTERNAL_ERROR`      | Server error            |
-
----
-
-## Rate Limit Headers
-
-```
-X-RateLimit-Limit: 10
-X-RateLimit-Remaining: 7
-X-RateLimit-Reset: 1703376060000
-```
-
----
-
-## CORS
-
-All endpoints support CORS from any origin.
+- `METHOD_NOT_ALLOWED`: Use POST
+- `RATE_LIMIT_EXCEEDED`: Wait for `retryAfter`
+- `INVALID_STYLE`: Check harmony mode
+- `INVALID_PARAMETERS`: Saturation/Contrast/Brightness out of range (-5 to 5)
+- `INVALID_BASE_COLOR`: Invalid hex
+- `INVALID_THEME`: Broken object structure
+- `INVALID_FORMAT`: Format not supported
 
 ---
 
 ## Quick Start
 
 ```javascript
-// Generate a theme
+// Generate balanced themes
 const response = await fetch("/api/generate-theme", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ style: "yin-yang" }),
+    body: JSON.stringify({
+        style: "analogous",
+        saturation: 2,
+    }),
 });
-const { theme } = await response.json();
+const { light, dark } = await response.json();
 
-// Export as CSS
+// Export light theme as CSS
 const exportResponse = await fetch("/api/export-theme", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ theme, format: "css" }),
+    body: JSON.stringify({
+        theme: light,
+        format: "css",
+    }),
 });
-const { content, filename } = await exportResponse.json();
-
-// Download file
-const blob = new Blob([content], { type: "text/css" });
-const url = URL.createObjectURL(blob);
-const a = document.createElement("a");
-a.href = url;
-a.download = filename;
-a.click();
+const { content } = await exportResponse.json();
+console.log(content);
 ```
 
 ---
