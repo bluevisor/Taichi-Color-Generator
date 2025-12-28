@@ -7,14 +7,17 @@ Generator.
 
 ```
 api/
-├── generate-theme.ts    # Self-contained theme generator
+├── generate-theme.ts    # OKLCH-based theme generation
 ├── export-theme.ts      # Multi-format theme exporter
 └── README.md            # This file
 ```
 
 ## Key Features
 
-- **HSL Color Engine:** Fast, self-contained color harmony generation.
+- **OKLCH Color Space:** All color calculations use the perceptually uniform
+  OKLCH color space for consistent, balanced themes.
+- **Gamut Mapping:** Automatic clamping ensures all colors stay within sRGB
+  gamut while preserving perceptual uniformity.
 - **Dual Support:** Every generation returns matching Light and Dark themes.
 - **Semantic Tokens:** Outputs 20 semantic tokens (bg, card, status, branding,
   etc.).
@@ -57,6 +60,20 @@ curl -X POST http://localhost:3000/api/export-theme \
     "options": { "prefix": "my-app" }
   }'
 ```
+
+## Color Science
+
+The API uses **OKLCH** (Oklab Lightness-Chroma-Hue) for color generation:
+
+- **Perceptually Uniform:** Equal steps in OKLCH produce equal perceived
+  differences, unlike HSL/HSV.
+- **Gamut Mapping:** Binary search algorithm ensures maximum chroma while
+  staying within sRGB gamut.
+- **Harmony Modes:** Hue offsets applied in OKLCH space for accurate color
+  relationships.
+
+This matches the frontend's `utils/paletteEngine.ts` and `utils/oklch.ts`
+implementation.
 
 ## Documentation
 

@@ -1,6 +1,13 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-// Inline rate limiting implementation
+/**
+ * Taichi Theme Generator API
+ * OKLCH-based dual-theme generation
+ * Version: 25.12.2
+ */
+
+// --- Rate Limiting ---
+
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
 
 function getClientIP(req: VercelRequest): string {
@@ -30,10 +37,169 @@ async function rateLimit(req: VercelRequest, max: number, windowMs: number) {
   return { success: false, retryAfter: Math.ceil((entry.resetTime - now) / 1000) };
 }
 
-// --- Inline Color Utilities (Self-Contained) ---
+// --- OKLCH Color Space ---
 
-type GenerationMode = 'random' | 'monochrome' | 'analogous' | 'complementary' | 
-  'split-complementary' | 'triadic' | 'tetradic' | 'compound' | 'triadic-split';
+interface OklchColor {
+  L: number;  // Lightness: 0-1
+  C: number;  // Chroma: 0-0.4
+  H: number;  // Hue: 0-360
+}
+
+function linearizeChannel(c: number): number {
+  const v = c / 255;
+  return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+}
+
+function delinearizeChannel(c: number): number {
+  const v = c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
+  return Math.round(Math.max(0, Math.min(255, v * 255)));
+}
+
+function hexToRgb(hex: string): { r: number; g: number; b: number } {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result
+    ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) }
+    : { r: 0, g: 0, b: 0 };
+}
+
+function rgbToHex(r: number, g: number, b: number): string {
+  return '#' + [r, g, b]
+    .map(x => Math.max(0, Math.min(255, Math.round(x))).toString(16).padStart(2, '0'))
+    .join('');
+}
+
+function toOklch(hex: string): OklchColor {
+  const { r, g, b } = hexToRgb(hex);
+  const lr = linearizeChannel(r);
+  const lg = linearizeChannel(g);
+  const lb = linearizeChannel(b);
+  
+  const l = 0.4122214708 * lr + 0.5363325363 * lg + 0.0514459929 * lb;
+  const m = 0.2119034982 * lr + 0.6806995451 * lg + 0.1073970037 * lb;
+  const s = 0.0883024619 * lr + 0.2817188376 * lg + 0.6299787005 * lb;
+  
+  const l_ = Math.cbrt(l);
+  const m_ = Math.cbrt(m);
+  const s_ = Math.cbrt(s);
+  
+  const L = 0.2104542553 * l_ + 0.7936177850 * m_ - 0.0040720468 * s_;
+  const a = 1.9779984951 * l_ - 2.4285922050 * m_ + 0.4505937099 * s_;
+  const b_ = 0.0259040371 * l_ + 0.7827717662 * m_ - 0.8086757660 * s_;
+  
+  const C = Math.sqrt(a * a + b_ * b_);
+  let H = Math.atan2(b_, a) * (180 / Math.PI);
+  if (H < 0) H += 360;
+  
+  return { L, C, H };
+}
+
+function toHex(color: OklchColor): string {
+  const { L, C, H } = color;
+  if (L <= 0) return '#000000';
+  if (L >= 1) return '#ffffff';
+  
+  const hRad = (H * Math.PI) / 180;
+  const a = C * Math.cos(hRad);
+  const b = C * Math.sin(hRad);
+  
+  const l_ = L + 0.3963377774 * a + 0.2158037573 * b;
+  const m_ = L - 0.1055613458 * a - 0.0638541728 * b;
+  const s_ = L - 0.0894841775 * a - 1.2914855480 * b;
+  
+  const l = l_ * l_ * l_;
+  const m = m_ * m_ * m_;
+  const s = s_ * s_ * s_;
+  
+  const lr = +4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s;
+  const lg = -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s;
+  const lb = -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s;
+  
+  return rgbToHex(delinearizeChannel(lr), delinearizeChannel(lg), delinearizeChannel(lb));
+}
+
+function clampToSRGBGamut(color: OklchColor): OklchColor {
+  // Binary search for max in-gamut chroma
+  let low = 0;
+  let high = color.C;
+  let result = { ...color, C: 0 };
+  
+  for (let i = 0; i < 10; i++) {
+    const mid = (low + high) / 2;
+    const test = { ...color, C: mid };
+    const hex = toHex(test);
+    const back = toOklch(hex);
+    
+    if (Math.abs(back.L - test.L) < 0.02 && Math.abs(back.C - test.C) < 0.02) {
+      low = mid;
+      result = test;
+    } else {
+      high = mid;
+    }
+  }
+  return result;
+}
+
+// --- Contrast Utilities ---
+
+function getRelativeLuminance(hex: string): number {
+  const { r, g, b } = hexToRgb(hex);
+  const toL = (c: number) => {
+    const v = c / 255;
+    return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  };
+  return 0.2126 * toL(r) + 0.7152 * toL(g) + 0.0722 * toL(b);
+}
+
+function contrastRatio(hex1: string, hex2: string): number {
+  const l1 = getRelativeLuminance(hex1);
+  const l2 = getRelativeLuminance(hex2);
+  const lighter = Math.max(l1, l2);
+  const darker = Math.min(l1, l2);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+function selectForeground(bgHex: string): string {
+  const lum = getRelativeLuminance(bgHex);
+  return lum > 0.179 ? '#000000' : '#FFFFFF';
+}
+
+// --- Seeded Random ---
+
+class SeededRandom {
+  private seed: number;
+  constructor(seed: string | number) {
+    this.seed = typeof seed === 'string' ? this.hashString(seed) : seed;
+  }
+  private hashString(str: string): number {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return Math.abs(hash);
+  }
+  next(): number {
+    const x = Math.sin(this.seed++) * 10000;
+    return x - Math.floor(x);
+  }
+  nextFloat(min: number, max: number): number {
+    return min + this.next() * (max - min);
+  }
+}
+
+// --- Harmony Modes ---
+
+const HARMONY_MODES: Record<string, number[]> = {
+  monochrome: [0, 0, 0, 0, 0],
+  analogous: [0, 30, -30, 15, -15],
+  complementary: [0, 180, 30, 210, -30],
+  'split-complementary': [0, 150, 210, 30, 180],
+  triadic: [0, 120, 240, 60, 180],
+  tetradic: [0, 90, 180, 270, 45],
+  compound: [0, 165, 180, 195, 30],
+  'triadic-split': [0, 120, 150, 240, 270],
+};
+
+// --- Theme Tokens ---
 
 interface ThemeTokens {
   bg: string;
@@ -58,80 +224,10 @@ interface ThemeTokens {
   badFg: string;
 }
 
-function hslToHex(h: number, s: number, l: number): string {
-  l /= 100;
-  const a = s * Math.min(l, 1 - l) / 100;
-  const f = (n: number) => {
-    const k = (n + h / 30) % 12;
-    const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-    return Math.round(255 * color).toString(16).padStart(2, '0');
-  };
-  return `#${f(0)}${f(8)}${f(4)}`;
-}
+type GenerationMode = 'random' | 'monochrome' | 'analogous' | 'complementary' | 
+  'split-complementary' | 'triadic' | 'tetradic' | 'compound' | 'triadic-split';
 
-function hexToHsl(hex: string): { h: number; s: number; l: number } {
-  const r = parseInt(hex.slice(1, 3), 16) / 255;
-  const g = parseInt(hex.slice(3, 5), 16) / 255;
-  const b = parseInt(hex.slice(5, 7), 16) / 255;
-  const max = Math.max(r, g, b), min = Math.min(r, g, b);
-  let h = 0, s = 0, l = (max + min) / 2;
-  if (max !== min) {
-    const d = max - min;
-    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-    switch (max) {
-      case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
-      case g: h = ((b - r) / d + 2) / 6; break;
-      case b: h = ((r - g) / d + 4) / 6; break;
-    }
-  }
-  return { h: h * 360, s: s * 100, l: l * 100 };
-}
-
-function getRelativeLuminance(hex: string): number {
-  const r = parseInt(hex.slice(1, 3), 16) / 255;
-  const g = parseInt(hex.slice(3, 5), 16) / 255;
-  const b = parseInt(hex.slice(5, 7), 16) / 255;
-  const toLinear = (c: number) => c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
-  return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
-}
-
-function selectForeground(bgHex: string): string {
-  const lum = getRelativeLuminance(bgHex);
-  return lum > 0.179 ? '#000000' : '#FFFFFF';
-}
-
-// Seeded random for reproducibility
-class SeededRandom {
-  private seed: number;
-  constructor(seed: string | number) {
-    this.seed = typeof seed === 'string' ? this.hashString(seed) : seed;
-  }
-  private hashString(str: string): number {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      hash = str.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    return Math.abs(hash);
-  }
-  next(): number {
-    const x = Math.sin(this.seed++) * 10000;
-    return x - Math.floor(x);
-  }
-  nextInt(min: number, max: number): number {
-    return Math.floor(this.next() * (max - min + 1)) + min;
-  }
-}
-
-const HARMONY_OFFSETS: Record<string, number[]> = {
-  monochrome: [0, 0, 0, 0, 0],
-  analogous: [0, 30, -30, 15, -15],
-  complementary: [0, 180, 30, 210, -30],
-  'split-complementary': [0, 150, 210, 30, 180],
-  triadic: [0, 120, 240, 60, 180],
-  tetradic: [0, 90, 180, 270, 45],
-  compound: [0, 165, 180, 195, 30],
-  'triadic-split': [0, 120, 150, 240, 270],
-};
+// --- OKLCH Theme Generator ---
 
 function generateTheme(
   mode: GenerationMode,
@@ -143,116 +239,149 @@ function generateTheme(
   const rngSeed = baseColor || `${Date.now()}-${Math.random()}`;
   const rng = new SeededRandom(rngSeed);
   
+  // Pick harmony mode
   let harmonyMode: GenerationMode = mode;
   if (mode === 'random') {
     const modes: GenerationMode[] = ['analogous', 'complementary', 'split-complementary', 'triadic', 'tetradic', 'compound', 'triadic-split'];
-    harmonyMode = modes[rng.nextInt(0, modes.length - 1)];
+    harmonyMode = modes[Math.floor(rng.next() * modes.length)];
   }
   
-  const baseHue = baseColor ? hexToHsl(baseColor).h : rng.nextInt(0, 359);
-  const offsets = HARMONY_OFFSETS[harmonyMode] || HARMONY_OFFSETS.analogous;
-  const hues = offsets.map(o => (baseHue + o + 360) % 360);
+  // Get base hue from color or random
+  const baseHue = baseColor ? toOklch(baseColor).H : rng.nextFloat(0, 360);
+  const offsets = HARMONY_MODES[harmonyMode] || HARMONY_MODES.analogous;
+  const hues = offsets.map(o => ((baseHue + o) % 360 + 360) % 360);
   
-  // Saturation and brightness modifiers
-  const satMod = 1 + saturationLevel * 0.1;
-  const briMod = brightnessLevel * 3;
-  const conMod = contrastLevel * 2;
+  // Apply modifiers
+  const satMod = 1 + saturationLevel * 0.12;
+  const briMod = brightnessLevel * 0.025;
+  const conMod = contrastLevel * 0.02;
   
-  // Generate light theme
-  const baseSat = Math.max(10, Math.min(90, 60 * satMod));
-  const baseLit = Math.max(30, Math.min(60, 50 + briMod));
+  // --- Light Theme (OKLCH) ---
+  const lightBgL = Math.min(0.99, Math.max(0.92, 0.97 + briMod));
+  const lightCardL = lightBgL - 0.04 - conMod * 0.5;
+  const lightCard2L = lightCardL - 0.03;
+  const lightTextL = Math.max(0.10, 0.18 - briMod * 0.5 - conMod);
+  const lightTextMutedL = 0.45;
+  const lightBorderL = 0.82;
   
-  const primary = hslToHex(hues[0], baseSat, baseLit);
-  const secondary = hslToHex(hues[1], baseSat * 0.85, baseLit + 5);
-  const accent = hslToHex(hues[2], baseSat * 1.1, baseLit - 5);
-  const good = hslToHex(140, baseSat * 0.9, baseLit);
-  const warn = hslToHex(45, baseSat, baseLit + 10);
-  const bad = hslToHex(0, baseSat, baseLit);
+  // Brand colors (OKLCH with chroma)
+  const baseChroma = Math.min(0.18, Math.max(0.08, 0.14 * satMod));
+  const primaryL = 0.55 + briMod * 0.5;
+  const secondaryL = 0.58 + briMod * 0.4;
+  const accentL = 0.52 + briMod * 0.3;
   
-  const bgL = Math.max(92, Math.min(99, 96 + briMod * 0.5));
-  const cardL = bgL - 3 - conMod * 0.5;
-  const textL = Math.max(5, Math.min(25, 15 - briMod * 0.3 - conMod));
+  const lightPrimary = clampToSRGBGamut({ L: primaryL, C: baseChroma, H: hues[0] });
+  const lightSecondary = clampToSRGBGamut({ L: secondaryL, C: baseChroma * 0.85, H: hues[1] });
+  const lightAccent = clampToSRGBGamut({ L: accentL, C: baseChroma * 1.1, H: hues[2] });
+  
+  // Status colors (fixed semantic hues)
+  const goodL = 0.55 + briMod * 0.3;
+  const warnL = 0.65 + briMod * 0.3;
+  const badL = 0.52 + briMod * 0.3;
+  
+  const lightGood = clampToSRGBGamut({ L: goodL, C: baseChroma * 0.9, H: 145 });
+  const lightWarn = clampToSRGBGamut({ L: warnL, C: baseChroma * 0.85, H: 85 });
+  const lightBad = clampToSRGBGamut({ L: badL, C: baseChroma * 0.95, H: 25 });
+  
+  // Neutrals (minimal chroma)
+  const neutralC = 0.005;
+  const lightBg = clampToSRGBGamut({ L: lightBgL, C: neutralC, H: hues[0] });
+  const lightCard = clampToSRGBGamut({ L: lightCardL, C: neutralC * 1.2, H: hues[0] });
+  const lightCard2 = clampToSRGBGamut({ L: lightCard2L, C: neutralC * 1.4, H: hues[0] });
+  const lightText = clampToSRGBGamut({ L: lightTextL, C: neutralC * 2, H: hues[0] });
+  const lightTextMuted = clampToSRGBGamut({ L: lightTextMutedL, C: neutralC * 1.5, H: hues[0] });
+  const lightBorder = clampToSRGBGamut({ L: lightBorderL, C: neutralC * 2, H: hues[0] });
   
   const light: ThemeTokens = {
-    bg: hslToHex(hues[0], 5, bgL),
-    card: hslToHex(hues[0], 6, cardL),
-    card2: hslToHex(hues[0], 7, cardL - 3),
-    text: hslToHex(hues[0], 10, textL),
-    textMuted: hslToHex(hues[0], 8, textL + 25),
+    bg: toHex(lightBg),
+    card: toHex(lightCard),
+    card2: toHex(lightCard2),
+    text: toHex(lightText),
+    textMuted: toHex(lightTextMuted),
     textOnColor: '#FFFFFF',
-    primary,
-    primaryFg: selectForeground(primary),
-    secondary,
-    secondaryFg: selectForeground(secondary),
-    accent,
-    accentFg: selectForeground(accent),
-    border: hslToHex(hues[0], 10, 82),
-    ring: primary,
-    good,
-    goodFg: selectForeground(good),
-    warn,
-    warnFg: selectForeground(warn),
-    bad,
-    badFg: selectForeground(bad),
+    primary: toHex(lightPrimary),
+    primaryFg: selectForeground(toHex(lightPrimary)),
+    secondary: toHex(lightSecondary),
+    secondaryFg: selectForeground(toHex(lightSecondary)),
+    accent: toHex(lightAccent),
+    accentFg: selectForeground(toHex(lightAccent)),
+    border: toHex(lightBorder),
+    ring: toHex(lightPrimary),
+    good: toHex(lightGood),
+    goodFg: selectForeground(toHex(lightGood)),
+    warn: toHex(lightWarn),
+    warnFg: selectForeground(toHex(lightWarn)),
+    bad: toHex(lightBad),
+    badFg: selectForeground(toHex(lightBad)),
   };
   
-  // Generate dark theme (derived)
-  const darkBgL = Math.max(5, Math.min(15, 10 - briMod * 0.3));
-  const darkCardL = darkBgL + 4 + conMod * 0.3;
-  const darkTextL = Math.min(98, Math.max(85, 92 + briMod * 0.2));
+  // --- Dark Theme (OKLCH) ---
+  const darkBgL = Math.max(0.05, Math.min(0.12, 0.08 - briMod * 0.3));
+  const darkCardL = darkBgL + 0.05 + conMod * 0.3;
+  const darkCard2L = darkCardL + 0.03;
+  const darkTextL = Math.min(0.98, 0.92 + briMod * 0.3);
+  const darkTextMutedL = 0.62;
+  const darkBorderL = 0.25;
   
-  const darkPrimary = hslToHex(hues[0], baseSat * 0.9, baseLit + 10);
-  const darkSecondary = hslToHex(hues[1], baseSat * 0.8, baseLit + 8);
-  const darkAccent = hslToHex(hues[2], baseSat, baseLit + 12);
-  const darkGood = hslToHex(140, baseSat * 0.85, baseLit + 8);
-  const darkWarn = hslToHex(45, baseSat * 0.9, baseLit + 12);
-  const darkBad = hslToHex(0, baseSat * 0.9, baseLit + 8);
+  // Adjusted brand colors for dark mode
+  const darkPrimaryL = primaryL + 0.08;
+  const darkSecondaryL = secondaryL + 0.06;
+  const darkAccentL = accentL + 0.1;
+  
+  const darkPrimary = clampToSRGBGamut({ L: darkPrimaryL, C: baseChroma * 0.9, H: hues[0] });
+  const darkSecondary = clampToSRGBGamut({ L: darkSecondaryL, C: baseChroma * 0.8, H: hues[1] });
+  const darkAccent = clampToSRGBGamut({ L: darkAccentL, C: baseChroma, H: hues[2] });
+  
+  const darkGood = clampToSRGBGamut({ L: goodL + 0.06, C: baseChroma * 0.85, H: 145 });
+  const darkWarn = clampToSRGBGamut({ L: warnL + 0.06, C: baseChroma * 0.8, H: 85 });
+  const darkBad = clampToSRGBGamut({ L: badL + 0.08, C: baseChroma * 0.9, H: 25 });
+  
+  const darkNeutralC = 0.008;
+  const darkBg = clampToSRGBGamut({ L: darkBgL, C: darkNeutralC, H: hues[0] });
+  const darkCard = clampToSRGBGamut({ L: darkCardL, C: darkNeutralC * 1.3, H: hues[0] });
+  const darkCard2 = clampToSRGBGamut({ L: darkCard2L, C: darkNeutralC * 1.5, H: hues[0] });
+  const darkText = clampToSRGBGamut({ L: darkTextL, C: darkNeutralC, H: hues[0] });
+  const darkTextMuted = clampToSRGBGamut({ L: darkTextMutedL, C: darkNeutralC * 1.2, H: hues[0] });
+  const darkBorder = clampToSRGBGamut({ L: darkBorderL, C: darkNeutralC * 2, H: hues[0] });
   
   const dark: ThemeTokens = {
-    bg: hslToHex(hues[0], 8, darkBgL),
-    card: hslToHex(hues[0], 10, darkCardL),
-    card2: hslToHex(hues[0], 12, darkCardL + 3),
-    text: hslToHex(hues[0], 5, darkTextL),
-    textMuted: hslToHex(hues[0], 6, darkTextL - 25),
+    bg: toHex(darkBg),
+    card: toHex(darkCard),
+    card2: toHex(darkCard2),
+    text: toHex(darkText),
+    textMuted: toHex(darkTextMuted),
     textOnColor: '#FFFFFF',
-    primary: darkPrimary,
-    primaryFg: selectForeground(darkPrimary),
-    secondary: darkSecondary,
-    secondaryFg: selectForeground(darkSecondary),
-    accent: darkAccent,
-    accentFg: selectForeground(darkAccent),
-    border: hslToHex(hues[0], 15, 25),
-    ring: darkPrimary,
-    good: darkGood,
-    goodFg: selectForeground(darkGood),
-    warn: darkWarn,
-    warnFg: selectForeground(darkWarn),
-    bad: darkBad,
-    badFg: selectForeground(darkBad),
+    primary: toHex(darkPrimary),
+    primaryFg: selectForeground(toHex(darkPrimary)),
+    secondary: toHex(darkSecondary),
+    secondaryFg: selectForeground(toHex(darkSecondary)),
+    accent: toHex(darkAccent),
+    accentFg: selectForeground(toHex(darkAccent)),
+    border: toHex(darkBorder),
+    ring: toHex(darkPrimary),
+    good: toHex(darkGood),
+    goodFg: selectForeground(toHex(darkGood)),
+    warn: toHex(darkWarn),
+    warnFg: selectForeground(toHex(darkWarn)),
+    bad: toHex(darkBad),
+    badFg: selectForeground(toHex(darkBad)),
   };
   
   return {
     light,
     dark,
-    seed: baseColor || hslToHex(baseHue, 60, 50),
+    seed: baseColor || toHex(clampToSRGBGamut({ L: 0.5, C: 0.15, H: baseHue })),
     mode: harmonyMode,
   };
 }
 
 // --- API Handler ---
 
-export default async function handler(
-  req: VercelRequest,
-  res: VercelResponse
-) {
-  // Enable CORS
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-  );
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') {
     res.status(200).end();
@@ -278,13 +407,7 @@ export default async function handler(
   }
 
   try {
-    const { 
-      style = 'random', 
-      baseColor, 
-      saturation = 0,
-      contrast = 0,
-      brightness = 0
-    } = req.body || {};
+    const { style = 'random', baseColor, saturation = 0, contrast = 0, brightness = 0 } = req.body || {};
 
     const validStyles = [
       'monochrome', 'analogous', 'complementary', 'split-complementary', 
@@ -316,13 +439,7 @@ export default async function handler(
       });
     }
 
-    const result = generateTheme(
-      style as GenerationMode, 
-      baseColor, 
-      saturation, 
-      contrast, 
-      brightness
-    );
+    const result = generateTheme(style as GenerationMode, baseColor, saturation, contrast, brightness);
 
     return res.status(200).json({
       success: true,
@@ -332,6 +449,7 @@ export default async function handler(
         style: result.mode,
         seed: result.seed,
         timestamp: Date.now(),
+        colorSpace: 'OKLCH',
         philosophy: getPhilosophy(result.mode)
       }
     });
@@ -358,6 +476,5 @@ function getPhilosophy(style: string): string {
     'triadic-split': 'A wide, dynamic palette for complex design systems.',
     'random': 'Embracing spontaneity and the natural flow of creative energy.'
   };
-  
   return philosophies[style] || philosophies.random;
 }
