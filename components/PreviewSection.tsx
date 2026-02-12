@@ -181,7 +181,7 @@ const PreviewSection: React.FC<PreviewProps> = ({
     ? 'bg-t-secondary bg-[linear-gradient(to_bottom,color-mix(in_oklab,var(--secondary),white_18%),color-mix(in_oklab,var(--secondary),black_10%))]'
     : 'bg-t-secondary';
 
-  const heroOverlayClass = themeName === 'Dark' ? 'bg-black/60' : 'bg-white/70';
+  const heroOverlayClass = themeName === 'Dark' ? 'bg-black/70' : 'bg-white/75';
   const badgeAccentClass = themeName === 'Dark' ? 'text-t-accent' : 'text-t-secondary';
   const hoverLiftClass = 'transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_35px_rgba(0,0,0,0.16)]';
   const hoverPanelClass = 'transition-colors duration-200 hover:bg-t-bg/80';
@@ -309,21 +309,21 @@ const PreviewSection: React.FC<PreviewProps> = ({
     <div className="p-6 md:p-10 space-y-10 bg-t-bg min-h-full">
       
       {/* Hero Section with Background Image */}
-      <section 
-        className={`relative overflow-hidden ${rClass} ${sClass} ${hoverLiftClass} p-8 md:p-12`}
+      <section
+        className={`relative overflow-hidden ${rClass} ${bClass} ${sClass} ${hoverLiftClass} p-8 md:p-12`}
         style={{
           backgroundImage: `url('/hero-bg.jpg')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
       >
-        <div className={`absolute left-4 top-4 z-10 inline-flex items-center ${rClass} ${bClass} border-t-border/50 bg-t-bg/70 px-3 py-1.5 text-[11px] font-semibold text-t-text backdrop-blur`}>
+        {/* Solid Color Overlay */}
+        <div className={`absolute inset-0 ${heroOverlayClass} pointer-events-none`} />
+
+        <div className={`absolute left-4 top-4 z-10 inline-flex items-center justify-center ${rClass} ${bClass} px-3 py-1.5 text-[11px] font-semibold backdrop-blur leading-none`} style={{ backgroundColor: themeTokens.card, color: themeTokens.text }}>
           <span className={badgeAccentClass}>{themeName} preview</span>
         </div>
 
-        {/* Solid Color Overlay */}
-        <div className={`absolute inset-0 ${heroOverlayClass} pointer-events-none`} />
-        
         {/* Content */}
         <div className="relative z-10 space-y-2 pt-8">
           <h1 className="text-4xl md:text-5xl lg:text-7xl font-black tracking-tight text-left leading-tight">
@@ -339,7 +339,7 @@ const PreviewSection: React.FC<PreviewProps> = ({
             <span className={`text-t-bg ${neutralChipClass}`}>background</span>,{' '}
             <span className={`text-t-card ${neutralChipClass}`}>surface</span>,{' '}
             <span className="text-t-text font-semibold">text</span>,{' '}
-            <span className={`text-t-border ${neutralChipClass}`}>border</span>,{' '}
+            <span className="text-t-text font-semibold px-2 py-1 rounded ring-1 ring-t-border">border</span>,{' '}
             <span className={`text-t-text ${ringChipClass}`}>ring</span>,{' '}
             <span className={`text-t-primary ${tokenChipClass}`}>primary</span>,{' '}
             <span className={`text-t-secondary ${tokenChipClass}`}>secondary</span>,{' '}
@@ -353,7 +353,7 @@ const PreviewSection: React.FC<PreviewProps> = ({
         </div>
         
         {/* Glass Edge */}
-        <div className={`absolute inset-0 ${rClass} ${bClass} border-white/10 pointer-events-none`} />
+        <div className={`absolute inset-0 ${rClass} ${bClass} pointer-events-none`} />
       </section>
 
       <section className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
